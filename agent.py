@@ -27,7 +27,7 @@ from openai import OpenAI
 
 # ─── CẤU HÌNH ─────────────────────────────────────────────────────────────────
 
-MODEL            = os.getenv("LLM_MODEL", os.getenv("MODEL", "qwen/qwen3-5-27b"))
+MODEL            = os.getenv("LLM_MODEL", os.getenv("MODEL", "minimax/minimax-m2.5"))
 MAX_TOKENS       = int(os.getenv("MAX_TOKENS", "2048"))
 MAX_TOKENS_JSON  = int(os.getenv("MAX_TOKENS_JSON", "512"))   # Agent 1+2: chỉ cần JSON nhỏ
 LOG_LEVEL   = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -44,58 +44,43 @@ log = logging.getLogger("zalopay.pipeline")
 
 # ─── PROMPTS ──────────────────────────────────────────────────────────────────
 
-AGENT12_SYSTEM = """Bạn là Agent Phân tích Ticket của hệ thống ZaloPay.
-Nhiệm vụ: Đọc ticket khách hàng và kết quả kiểm tra hệ thống, thực hiện 2 việc cùng lúc: phân loại ticket VÀ phân tích nghiệp vụ.
-Chỉ trả về JSON hợp lệ duy nhất, không giải thích, không thêm văn bản nào khác.
-Cấu trúc JSON bắt buộc:
+AGENT_ALL_SYSTEM = """Bạn là hệ thống xử lý ticket CSKH của ZaloPay.
+Đọc ticket khách hàng và kết quả kiểm tra hệ thống, thực hiện 3 việc trong 1 lần:
+1. Phân loại ticket
+2. Phân tích nghiệp vụ
+3. Soạn phản hồi chuẩn ZaloPay gửi khách hàng
+
+Trả về JSON hợp lệ duy nhất theo cấu trúc sau, KHÔNG thêm bất kỳ văn bản nào ngoài JSON:
 {
-  "category": "string (ví dụ: TELCO, BANKING, WALLET, TOPUP, PAYMENT)",
-  "sub_category": "string (ví dụ: DATA_SUCCESS_NO_SERVICE, WRONG_TRANSFER, REFUND_REQUEST)",
+  "category": "TELCO | BANKING | WALLET | TOPUP | PAYMENT",
+  "sub_category": "ví dụ: DATA_SUCCESS_NO_SERVICE, WRONG_TRANSFER, REFUND_REQUEST",
   "merchant": "string hoặc null",
   "transaction_id": "string hoặc null",
   "phone_number": "string hoặc null",
   "amount": "string hoặc null",
-  "customer_request": "string mô tả yêu cầu của khách",
-  "confidence": "high nếu ticket rõ ràng, medium nếu thiếu một số chi tiết, low nếu ticket mơ hồ",
-  "root_cause": "string mô tả nguyên nhân gốc rễ",
+  "customer_request": "mô tả yêu cầu khách",
+  "confidence": "high | medium | low",
+  "root_cause": "nguyên nhân gốc rễ",
   "refund_allowed": true hoặc false,
-  "next_action": "string hướng xử lý cụ thể",
-  "customer_responsibility": "string hoặc null nếu khách cần thực hiện thêm bước gì",
-  "escalate": true hoặc false
+  "next_action": "hướng xử lý cụ thể",
+  "customer_responsibility": "string hoặc null",
+  "escalate": true hoặc false,
+  "final_response": "phản hồi hoàn chỉnh gửi khách hàng theo đúng chuẩn ZaloPay bên dưới"
 }
-Quy tắc nghiệp vụ bắt buộc:
-- Nếu đối tác / nhà mạng xác nhận dịch vụ thành công → refund_allowed = false
-- Nếu ngân hàng yêu cầu chủ tài khoản liên hệ → ghi rõ vào next_action
+
+QUY TẮC final_response:
+- Không dùng tiếng Anh
+- Luôn dùng thương hiệu "Zalopay"
+- Không dùng từ tiêu cực: "không biết", "không phải trách nhiệm", "khách hàng nhập sai"
+- Luôn dùng chủ ngữ "Zalopay" khi đề cập kiểm tra với đối tác/nhà mạng/ngân hàng
+- Nếu là TƯ VẤN: bắt đầu "Chào bạn,\\nCảm ơn bạn đã quan tâm và sử dụng dịch vụ của ứng dụng thanh toán Zalopay."
+- Nếu là KHIẾU NẠI: bắt đầu "Chào bạn,\\nZalopay xin lỗi vì đã để bạn có những trải nghiệm không tốt khi sử dụng dịch vụ."
+- Kết thúc bằng lời cảm ơn của Zalopay
+
+QUY TẮC NGHIỆP VỤ:
+- Đối tác/nhà mạng xác nhận thành công → refund_allowed = false
+- Ngân hàng yêu cầu chủ tài khoản liên hệ → ghi rõ vào next_action
 - Không suy diễn ngoài thông tin được cung cấp"""
-
-AGENT0_SYSTEM = """Bạn là Agent Soạn thảo và Chuẩn hóa Phản hồi của hệ thống Zalopay.
-Nhận kết quả phân loại ticket và phân tích nghiệp vụ, viết phản hồi hoàn chỉnh gửi khách hàng theo đúng tiêu chuẩn CSKH Zalopay.
-
-QUY TẮC CHUNG:
-- Không dùng tiếng Anh trong bất kỳ câu nào.
-- Luôn dùng thương hiệu "Zalopay" (không viết tắt, không thay đổi cách viết).
-- Không dùng từ tiêu cực: "không biết", "không phải trách nhiệm của Zalopay", "khách hàng nhập sai".
-- Khi đề cập việc kiểm tra với đối tác/nhà mạng/ngân hàng, luôn dùng chủ ngữ "Zalopay" — ví dụ: "Zalopay đã làm việc với nhà mạng Viettel...", "Zalopay đã xác nhận với ngân hàng..." (không dùng "đội ngũ hỗ trợ", "chúng tôi đã liên hệ").
-- Giải thích rõ nguyên nhân và hướng xử lý cụ thể.
-- Văn phong chuyên nghiệp, thân thiện, rõ ràng.
-
-NẾU LÀ TƯ VẤN (khách hỏi thông tin, hướng dẫn sử dụng, chưa có sự cố):
-- Mở đầu bằng:
-  "Chào bạn,
-  Cảm ơn bạn đã quan tâm và sử dụng dịch vụ của ứng dụng thanh toán Zalopay."
-- Kết thúc bằng:
-  "Nếu cần hỗ trợ thêm thông tin khác, bạn vui lòng gửi yêu cầu mới tại Trung tâm hỗ trợ để Zalopay phản hồi đến bạn nhanh chóng nhất.
-  Cảm ơn bạn đã quan tâm và sử dụng dịch vụ của Zalopay."
-
-NẾU LÀ KHIẾU NẠI (khách phản ánh sự cố, mất tiền, lỗi giao dịch, bức xúc):
-- Mở đầu bằng:
-  "Chào bạn,
-  Zalopay xin lỗi vì đã để bạn có những trải nghiệm không tốt khi sử dụng dịch vụ."
-- Kết thúc bằng:
-  "Zalopay một lần nữa xin lỗi vì sự bất tiện này. Nếu cần hỗ trợ thêm, bạn vui lòng gửi yêu cầu mới tại Trung tâm hỗ trợ để Zalopay phản hồi đến bạn nhanh chóng nhất.
-  Cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của Zalopay."
-
-Chỉ trả về nội dung phản hồi, không giải thích gì thêm."""
 
 
 # ─── DATA CLASSES ─────────────────────────────────────────────────────────────
@@ -184,19 +169,19 @@ def call_claude(client: OpenAI, system: str, user_content: str, retries: int = 1
 
 # ─── CÁC AGENT ────────────────────────────────────────────────────────────────
 
-def agent12_analyze(
+def agent_all(
     client: OpenAI,
     ticket: str,
     check_result: str,
 ) -> tuple:
-    """Agent 1+2 gộp: Phân loại + Phân tích nghiệp vụ trong 1 lần gọi LLM."""
-    log.info("[Agent 1+2] Đang phân loại và phân tích ticket (1 lần gọi)...")
+    """Agent gộp 1+2+0: Phân loại + Phân tích + Soạn phản hồi trong 1 lần gọi LLM duy nhất."""
+    log.info("[Agent ALL] Đang xử lý toàn bộ pipeline trong 1 lần gọi LLM...")
     prompt = (
         f"Ticket khách hàng:\n{ticket}\n\n"
         f"Kết quả kiểm tra hệ thống:\n{check_result or '(Chưa có kết quả kiểm tra)'}"
     )
-    raw = call_claude(client, AGENT12_SYSTEM, prompt, max_tokens=MAX_TOKENS_JSON)
-    log.debug("[Agent 1+2] Raw output:\n%s", raw)
+    raw = call_claude(client, AGENT_ALL_SYSTEM, prompt)
+    log.debug("[Agent ALL] Raw output:\n%s", raw)
 
     data = safe_parse_json(raw)
 
@@ -221,12 +206,18 @@ def agent12_analyze(
         customer_responsibility=data.get("customer_responsibility"),
         escalate=bool(data.get("escalate", False)),
     )
+    final_response = data.get("final_response", "")
+    if final_response and not final_response.lstrip().startswith("Chào bạn"):
+        final_response = "Chào bạn,\n" + final_response.lstrip()
+    final_response = re.sub(r'\bZaloPay\b', 'Zalopay', final_response)
+    final_response = re.sub(r'\bzalopay\b', 'Zalopay', final_response, flags=re.IGNORECASE)
+
     log.info(
-        "[Agent 1+2] ✓ category=%s | confidence=%s | refund_allowed=%s | escalate=%s",
+        "[Agent ALL] ✓ category=%s | confidence=%s | refund_allowed=%s | escalate=%s | response=%d ký tự",
         classification.category, classification.confidence,
-        analysis.refund_allowed, analysis.escalate,
+        analysis.refund_allowed, analysis.escalate, len(final_response),
     )
-    return classification, analysis
+    return classification, analysis, final_response
 
 
 def agent0_respond(
@@ -277,16 +268,13 @@ def run_pipeline(ticket: str, check_result: str = "") -> PipelineResult:
     result = PipelineResult()
 
     try:
-        # Bước 1+2 gộp (1 lần gọi LLM thay vì 2)
-        result.classification, result.analysis = agent12_analyze(client, ticket, check_result)
+        # 1 lần gọi LLM duy nhất cho toàn bộ pipeline
+        result.classification, result.analysis, result.final_response = agent_all(client, ticket, check_result)
 
-        # Routing: ticket mơ hồ → flag human review, vẫn tiếp tục
+        # Routing: ticket mơ hồ → flag human review
         if result.classification.confidence == "low":
             log.warning("Confidence thấp — ticket cần được nhân viên xem lại.")
             result.needs_human_review = True
-
-        # Bước 0: soạn thảo phản hồi
-        result.final_response = agent0_respond(client, result.classification, result.analysis)
 
         result.success = True
         log.info("Pipeline hoàn tất thành công. needs_human_review=%s", result.needs_human_review)
