@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash *)",
+      "PowerShell($tag = \"v$\\(Get-Date -Format 'yyyyMMddHHmmss'\\)\"; Write-Host \"Tag: $tag\"; docker build --platform linux/amd64 -f Dockerfile.jira -t \"vcr.vngcloud.vn/111480-abp112121/zalopay-jira-analyzer:$tag\" . 2>&1; $global:IMAGE_TAG = $tag)",
+      "PowerShell(docker info *)",
+      "PowerShell(docker context list *)",
+      "PowerShell(docker context use default; docker info 2>&1 | Select-Object -First 8)",
+      "PowerShell(docker context use *)",
+      "PowerShell(Get-Process *)",
+      "PowerShell($tag = \"v$\\(Get-Date -Format 'yyyyMMddHHmmss'\\)\"; Write-Host \"Tag: $tag\"; Set-Location \"D:\\\\AI\\\\N3\"; docker build --platform linux/amd64 -f Dockerfile.jira -t \"vcr.vngcloud.vn/111480-abp112121/zalopay-jira-analyzer:$tag\" . 2>&1; $env:IMAGE_TAG = $tag; Write-Host \"IMAGE_TAG set to: $tag\")",
+      "PowerShell(docker push *)",
+      "Bash(curl *)",
+      "PowerShell($tag = \"v$\\(Get-Date -Format 'yyyyMMddHHmmss'\\)\"; Write-Host \"Tag: $tag\"; Set-Location \"D:\\\\AI\\\\N3\"; docker build --platform linux/amd64 -f Dockerfile.jira -t \"vcr.vngcloud.vn/111480-abp112121/zalopay-jira-analyzer:$tag\" .; $env:NEW_TAG = $tag; Write-Host \"Done: $tag\")"
+    ]
+  }
+}

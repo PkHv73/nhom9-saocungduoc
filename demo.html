@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZaloPay AI Support</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; }
+
+    header {
+      background: #0068ff;
+      color: white;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    header h1 { font-size: 18px; font-weight: 600; }
+    header span { font-size: 12px; opacity: 0.75; margin-left: auto; }
+
+    .container { max-width: 860px; margin: 28px auto; padding: 0 16px; }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 22px 24px;
+      margin-bottom: 18px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    .card-title {
+      font-size: 14px; font-weight: 700; color: #1e3a5f;
+      margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+    }
+
+    /* tabs */
+    .tabs { display: flex; gap: 4px; margin-bottom: 18px; background: #f0f2f5; border-radius: 10px; padding: 4px; }
+    .tab {
+      flex: 1; padding: 8px 0; border: none; background: transparent;
+      border-radius: 8px; font-size: 13px; font-weight: 600; color: #666;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .tab.active { background: white; color: #0068ff; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    label { display: block; font-size: 13px; color: #555; margin-bottom: 6px; font-weight: 500; }
+    textarea {
+      width: 100%; border: 1px solid #dde3ec; border-radius: 8px;
+      padding: 10px 12px; font-size: 13px; font-family: inherit;
+      resize: vertical; transition: border-color 0.2s;
+    }
+    textarea:focus { outline: none; border-color: #0068ff; }
+    textarea { min-height: 90px; }
+
+    .btn {
+      background: #0068ff; color: white; border: none;
+      border-radius: 8px; padding: 11px 24px; font-size: 14px;
+      font-weight: 600; cursor: pointer; width: 100%; margin-top: 14px;
+      transition: background 0.2s;
+    }
+    .btn:hover:not(:disabled) { background: #0056d6; }
+    .btn:disabled { background: #b0bec5; cursor: not-allowed; }
+    .btn-green { background: #16a34a; }
+    .btn-green:hover:not(:disabled) { background: #15803d; }
+    .btn-sm {
+      width: auto; padding: 7px 16px; font-size: 13px; margin-top: 0;
+      display: inline-block;
+    }
+
+    /* upload zone */
+    .upload-zone {
+      border: 2px dashed #c7d7f0; border-radius: 10px;
+      padding: 24px; text-align: center; cursor: pointer;
+      transition: all 0.2s; color: #64748b; font-size: 13px;
+      background: #f8faff;
+    }
+    .upload-zone:hover, .upload-zone.dragover { border-color: #0068ff; background: #eff6ff; }
+    .upload-zone .upload-icon { font-size: 28px; margin-bottom: 8px; }
+    .upload-zone input { display: none; }
+    .file-selected { margin-top: 10px; color: #0068ff; font-weight: 600; font-size: 13px; }
+
+    /* progress */
+    .progress-wrap { margin: 14px 0; display: none; }
+    .progress-bar { height: 8px; background: #e2e8f0; border-radius: 99px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #0068ff; border-radius: 99px; transition: width 0.3s; width: 0%; }
+    .progress-label { font-size: 12px; color: #64748b; margin-top: 6px; display: flex; justify-content: space-between; }
+
+    .spinner-inline {
+      display: inline-block; width: 14px; height: 14px;
+      border: 2px solid #d0e4ff; border-top-color: #0068ff;
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+      vertical-align: middle; margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* result single */
+    .result-label { font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+    .tag { background: #eff6ff; border-radius: 20px; padding: 3px 11px; font-size: 12px; color: #1e3a5f; }
+    .response-box {
+      background: #f8faff; border: 1px solid #d0e4ff; border-left: 4px solid #0068ff;
+      border-radius: 8px; padding: 14px 16px; font-size: 13px; line-height: 1.75;
+      color: #222; white-space: pre-wrap;
+    }
+
+    /* batch results table */
+    .results-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;
+    }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .badge-ok { background: #dcfce7; color: #166534; }
+    .badge-err { background: #fee2e2; color: #991b1b; }
+    .batch-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .batch-table th {
+      background: #1e3a5f; color: white; padding: 9px 12px;
+      text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.3px;
+    }
+    .batch-table td {
+      padding: 9px 12px; border-bottom: 1px solid #f1f5f9;
+      vertical-align: top; line-height: 1.5;
+    }
+    .batch-table tr:last-child td { border-bottom: none; }
+    .batch-table tr:nth-child(even) td { background: #f8faff; }
+    .key-link { font-weight: 700; color: #0068ff; font-size: 11px; }
+    .response-preview {
+      max-height: 80px; overflow: hidden; position: relative; color: #334155; font-size: 11px;
+    }
+    .response-preview.expanded { max-height: none; }
+    .expand-btn {
+      background: none; border: none; color: #0068ff; font-size: 11px;
+      cursor: pointer; padding: 2px 0; font-weight: 600;
+    }
+
+    .error-box {
+      background: #fff0f0; border: 1px solid #fecaca;
+      border-radius: 8px; padding: 12px 16px; color: #991b1b; font-size: 13px;
+    }
+
+    .samples { display: flex; flex-direction: column; gap: 8px; }
+    .sample-btn {
+      background: #f8faff; border: 1px solid #d0e4ff; border-radius: 8px;
+      padding: 9px 14px; font-size: 13px; color: #0068ff;
+      cursor: pointer; text-align: left; transition: background 0.15s;
+    }
+    .sample-btn:hover { background: #e8f0ff; }
+
+    .endpoint-note { font-size: 11px; color: #b0bec5; text-align: center; margin-top: 8px; }
+
+    .stat-row { display: flex; gap: 12px; margin-bottom: 16px; }
+    .stat { flex: 1; background: #f8faff; border-radius: 10px; padding: 12px 16px; text-align: center; }
+    .stat-val { font-size: 26px; font-weight: 700; color: #1e3a5f; }
+    .stat-label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <svg width="32" height="32" viewBox="0 0 36 36" fill="none">
+    <rect width="36" height="36" rx="8" fill="white"/>
+    <text x="5" y="26" font-size="20" font-weight="bold" fill="#0068ff">Z</text>
+  </svg>
+  <h1>ZaloPay AI Support</h1>
+  <span>Hệ thống Phản hồi Tự động — 3 Agent Pipeline</span>
+</header>
+
+<div class="container">
+
+  <!-- Ticket mẫu -->
+  <div class="card">
+    <div class="card-title">🎯 Ticket mẫu</div>
+    <div class="samples">
+      <button class="sample-btn" onclick="fillSample(0)">📱 Mua data Viettel thành công nhưng chưa nhận được</button>
+      <button class="sample-btn" onclick="fillSample(1)">💸 Chuyển tiền nhầm số tài khoản</button>
+      <button class="sample-btn" onclick="fillSample(2)">🔐 Không xác thực được eKYC bằng CCCD chip</button>
+    </div>
+  </div>
+
+  <!-- Tabs: Nhập tay / Batch Excel -->
+  <div class="card">
+    <div class="tabs">
+      <button class="tab active" id="tab-single" onclick="switchTab('single')">✍️ Nhập ticket thủ công</button>
+      <button class="tab" id="tab-batch" onclick="switchTab('batch')">📂 Xử lý hàng loạt từ Excel</button>
+    </div>
+
+    <!-- TAB: Nhập tay -->
+    <div class="tab-panel active" id="panel-single">
+      <div style="margin-bottom: 14px;">
+        <label>Nội dung ticket từ khách hàng</label>
+        <textarea id="ticket" placeholder="Nhập nội dung khiếu nại hoặc yêu cầu của khách hàng..."></textarea>
+      </div>
+      <div>
+        <label>Kết quả kiểm tra hệ thống <span style="color:#b0bec5;font-weight:400">(không bắt buộc)</span></label>
+        <textarea id="check_result" rows="2" style="min-height:60px" placeholder="Kết quả tra cứu từ hệ thống, nhà mạng, ngân hàng..."></textarea>
+      </div>
+      <button class="btn" id="submitBtn" onclick="submitTicket()">🚀 Xử lý ticket</button>
+      <p class="endpoint-note" id="endpointNote"></p>
+    </div>
+
+    <!-- TAB: Batch Excel -->
+    <div class="tab-panel" id="panel-batch">
+      <div style="margin-bottom: 12px; font-size: 13px; color: #64748b; background: #eff6ff; border-radius: 8px; padding: 10px 14px;">
+        💡 Upload file Excel xuất từ <strong>Jira Ticket Analyzer</strong> (Project 2). Pipeline sẽ tự động đọc từng dòng và soạn phản hồi chuẩn ZaloPay.
+      </div>
+
+      <div class="upload-zone" id="batchUploadZone"
+        onclick="document.getElementById('batchFileInput').click()"
+        ondragover="event.preventDefault();this.classList.add('dragover')"
+        ondragleave="this.classList.remove('dragover')"
+        ondrop="handleBatchDrop(event)">
+        <input type="file" id="batchFileInput" accept=".xlsx,.xls" onchange="handleBatchFile(this.files[0])">
+        <div class="upload-icon">📊</div>
+        <div>Kéo thả hoặc click để chọn file Excel từ Jira Analyzer</div>
+        <div style="font-size:11px;color:#94a3b8;margin-top:4px">Hỗ trợ: .xlsx, .xls</div>
+        <div class="file-selected" id="batchFileName"></div>
+      </div>
+
+      <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
+        <div>
+          <label style="display:inline;margin-right:8px">Số lượng xử lý:</label>
+          <select id="batchLimit" style="padding:6px 10px;border:1px solid #dde3ec;border-radius:8px;font-size:13px;font-family:inherit">
+            <option value="5">5 tickets</option>
+            <option value="10" selected>10 tickets</option>
+            <option value="20">20 tickets</option>
+            <option value="50">50 tickets</option>
+            <option value="999">Tất cả</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-wrap" id="batchProgress">
+        <div class="progress-bar"><div class="progress-fill" id="batchFill"></div></div>
+        <div class="progress-label">
+          <span id="batchProgressLabel"><span class="spinner-inline"></span>Đang chuẩn bị...</span>
+          <span id="batchProgressCount">0 / 0</span>
+        </div>
+      </div>
+
+      <button class="btn" id="batchBtn" onclick="runBatch()">⚡ Xử lý hàng loạt</button>
+      <p class="endpoint-note">Endpoint: http://localhost:3001/invocations</p>
+    </div>
+  </div>
+
+  <!-- Spinner nhập tay -->
+  <div id="singleSpinner" style="display:none;text-align:center;padding:20px;color:#64748b;font-size:13px">
+    <span class="spinner-inline"></span>Đang xử lý qua 3 agents...
+  </div>
+
+  <!-- Kết quả nhập tay -->
+  <div class="card" id="resultCard" style="display:none">
+    <div class="card-title">📋 Kết quả xử lý</div>
+    <div style="margin-bottom:12px">
+      <div class="result-label">Phân loại (Agent 1)</div>
+      <div class="tags" id="tags"></div>
+    </div>
+    <div style="margin-bottom:12px">
+      <div class="result-label">Phân tích nghiệp vụ (Agent 2)</div>
+      <div class="tags" id="analysis"></div>
+    </div>
+    <div>
+      <div class="result-label">Phản hồi chuẩn ZaloPay (Agent 0)</div>
+      <div class="response-box" id="finalResponse"></div>
+    </div>
+  </div>
+
+  <!-- Kết quả batch -->
+  <div class="card" id="batchResultCard" style="display:none">
+    <div class="results-header">
+      <div class="card-title" style="margin-bottom:0">📊 Kết quả xử lý hàng loạt</div>
+      <button class="btn btn-green btn-sm" onclick="exportBatchExcel()">📥 Xuất Excel kết quả</button>
+    </div>
+    <div class="stat-row" id="batchStats"></div>
+    <div style="overflow-x:auto">
+      <table class="batch-table" id="batchTable">
+        <thead>
+          <tr>
+            <th style="width:10%">Issue Key</th>
+            <th style="width:14%">Loại vấn đề</th>
+            <th style="width:12%">Root Cause</th>
+            <th style="width:8%">SLA</th>
+            <th style="width:8%">Escalate</th>
+            <th style="width:48%">Phản hồi ZaloPay</th>
+          </tr>
+        </thead>
+        <tbody id="batchTbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Lỗi -->
+  <div class="card" id="errorCard" style="display:none">
+    <div class="error-box" id="errorMsg"></div>
+  </div>
+
+</div>
+
+<script>
+  const ENDPOINT = 'http://localhost:3001/invocations';
+  document.getElementById('endpointNote').textContent = 'Endpoint: ' + ENDPOINT;
+
+  // ── SAMPLES ────────────────────────────────────────────────────────────────
+  const samples = [
+    { ticket: 'Tôi đã mua gói data 4G Viettel 3GB qua ZaloPay lúc 9h sáng, tiền đã bị trừ nhưng đến giờ vẫn chưa nhận được data. SĐT 0912345678, giao dịch GD20260613001.', check_result: 'Nhà mạng Viettel xác nhận đã cấp data thành công lúc 9h05, hiện tại gói đang active.' },
+    { ticket: 'Tôi vừa chuyển 500,000đ qua ZaloPay nhưng chuyển nhầm sang số tài khoản 0123456789 thay vì 0987654321. Giao dịch GD20260613002.', check_result: 'Giao dịch thành công, tiền đã vào tài khoản đích. Ngân hàng yêu cầu chủ tài khoản nhận liên hệ trực tiếp để hoàn trả.' },
+    { ticket: 'Tôi đang cố xác thực tài khoản ZaloPay bằng CCCD gắn chip nhưng ứng dụng báo không đọc được chip. Đã thử nhiều lần vẫn thất bại.', check_result: '' }
+  ];
+
+  function fillSample(i) {
+    switchTab('single');
+    document.getElementById('ticket').value = samples[i].ticket;
+    document.getElementById('check_result').value = samples[i].check_result;
+  }
+
+  // ── TABS ───────────────────────────────────────────────────────────────────
+  function switchTab(tab) {
+    ['single','batch'].forEach(t => {
+      document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+      document.getElementById('panel-' + t).classList.toggle('active', t === tab);
+    });
+  }
+
+  // ── SINGLE TICKET ──────────────────────────────────────────────────────────
+  async function submitTicket() {
+    const ticket = document.getElementById('ticket').value.trim();
+    if (!ticket) { alert('Vui lòng nhập nội dung ticket.'); return; }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    document.getElementById('singleSpinner').style.display = 'block';
+    document.getElementById('resultCard').style.display = 'none';
+    document.getElementById('errorCard').style.display = 'none';
+
+    try {
+      const data = await callPipeline(ticket, document.getElementById('check_result').value.trim());
+      renderSingleResult(data);
+      document.getElementById('resultCard').style.display = 'block';
+    } catch(err) {
+      showError(err.message);
+    } finally {
+      btn.disabled = false;
+      document.getElementById('singleSpinner').style.display = 'none';
+    }
+  }
+
+  function renderSingleResult(data) {
+    const c = data.classification || {};
+    document.getElementById('tags').innerHTML = [c.category, c.sub_category, c.merchant, c.phone_number, c.amount]
+      .filter(Boolean).map(v => `<span class="tag"><strong>${v}</strong></span>`).join('');
+    const a = data.analysis || {};
+    document.getElementById('analysis').innerHTML = [
+      a.root_cause ? `Nguyên nhân: ${a.root_cause}` : null,
+      a.refund_allowed !== undefined ? (a.refund_allowed ? '✅ Được hoàn tiền' : '❌ Không hoàn tiền') : null,
+      a.escalate ? '⚠️ Cần escalate' : null
+    ].filter(Boolean).map(v => `<span class="tag">${v}</span>`).join('');
+    document.getElementById('finalResponse').textContent = data.final_response || '(Không có phản hồi)';
+  }
+
+  // ── BATCH FILE HANDLING ────────────────────────────────────────────────────
+  let batchRows = [];
+
+  function handleBatchDrop(e) {
+    e.preventDefault();
+    document.getElementById('batchUploadZone').classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) handleBatchFile(file);
+  }
+
+  function handleBatchFile(file) {
+    if (!file) return;
+    document.getElementById('batchFileName').textContent = '✅ ' + file.name;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const wb = XLSX.read(e.target.result, { type: 'binary' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+      batchRows = rows;
+      document.getElementById('batchFileName').textContent = '✅ ' + file.name + ' — ' + rows.length + ' dòng';
+    };
+    reader.readAsBinaryString(file);
+  }
+
+  // ── BATCH PROCESSING ───────────────────────────────────────────────────────
+  let batchResults = [];
+
+  async function runBatch() {
+    if (!batchRows.length) { alert('Vui lòng chọn file Excel trước.'); return; }
+
+    const limit = parseInt(document.getElementById('batchLimit').value);
+    const rows = batchRows.slice(0, limit);
+    const btn = document.getElementById('batchBtn');
+    btn.disabled = true;
+
+    document.getElementById('batchProgress').style.display = 'block';
+    document.getElementById('batchResultCard').style.display = 'none';
+    document.getElementById('errorCard').style.display = 'none';
+    batchResults = [];
+
+    let ok = 0, fail = 0;
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const key = row['Issue Key'] || row['Issue key'] || ('ROW-' + (i+1));
+      const type = row['Loại vấn đề'] || row['Loai van de'] || '';
+      const rootCause = row['Root Cause'] || '';
+      const sla = row['SLA Status'] || 'OK';
+      const escalateTo = row['Escalate đến'] || row['Escalate den'] || '';
+      const suggestion = row['Gợi ý xử lý CS'] || row['Goi y xu ly CS'] || '';
+
+      // Cập nhật progress
+      const pct = Math.round((i / rows.length) * 100);
+      document.getElementById('batchFill').style.width = pct + '%';
+      document.getElementById('batchProgressLabel').innerHTML =
+        '<span class="spinner-inline"></span>Đang xử lý: <strong>' + key + '</strong>';
+      document.getElementById('batchProgressCount').textContent = i + ' / ' + rows.length;
+
+      // Build ticket content từ dữ liệu Jira
+      const ticketText = buildTicketText(key, type, rootCause, suggestion, escalateTo);
+      const checkResult = buildCheckResult(rootCause, suggestion, escalateTo);
+
+      try {
+        const data = await callPipeline(ticketText, checkResult);
+        batchResults.push({
+          key, type, rootCause, sla, escalateTo,
+          final_response: data.final_response || '',
+          classification: data.classification || {},
+          analysis: data.analysis || {},
+          status: 'ok'
+        });
+        ok++;
+      } catch(err) {
+        batchResults.push({ key, type, rootCause, sla, escalateTo, final_response: '', error: err.message, status: 'error' });
+        fail++;
+      }
+    }
+
+    // Done
+    document.getElementById('batchFill').style.width = '100%';
+    document.getElementById('batchProgressLabel').textContent = '✅ Hoàn tất!';
+    document.getElementById('batchProgressCount').textContent = rows.length + ' / ' + rows.length;
+    btn.disabled = false;
+
+    renderBatchResults(ok, fail);
+  }
+
+  function buildTicketText(key, type, rootCause, suggestion, escalateTo) {
+    let text = '[' + key + '] ';
+    if (type) text += 'Loại: ' + type + '. ';
+    if (suggestion) text += 'Vấn đề: ' + suggestion;
+    else if (rootCause) text += 'Nguyên nhân ghi nhận: ' + rootCause;
+    if (escalateTo) text += ' (Cần escalate đến: ' + escalateTo + ')';
+    return text.trim();
+  }
+
+  function buildCheckResult(rootCause, suggestion, escalateTo) {
+    const parts = [];
+    if (rootCause) parts.push('Root cause: ' + rootCause);
+    if (escalateTo) parts.push('Đã escalate đến ' + escalateTo);
+    return parts.join('. ');
+  }
+
+  function renderBatchResults(ok, fail) {
+    const total = ok + fail;
+    document.getElementById('batchStats').innerHTML =
+      '<div class="stat"><div class="stat-val" style="color:#1e3a5f">' + total + '</div><div class="stat-label">Tổng xử lý</div></div>' +
+      '<div class="stat"><div class="stat-val" style="color:#166534">' + ok + '</div><div class="stat-label">Thành công</div></div>' +
+      '<div class="stat"><div class="stat-val" style="color:#991b1b">' + fail + '</div><div class="stat-label">Lỗi</div></div>';
+
+    const tbody = document.getElementById('batchTbody');
+    tbody.innerHTML = batchResults.map(function(r, idx) {
+      const response = r.status === 'ok' ? r.final_response : ('❌ ' + (r.error || 'Lỗi không xác định'));
+      const previewId = 'prev-' + idx;
+      return '<tr>' +
+        '<td><span class="key-link">' + r.key + '</span></td>' +
+        '<td style="font-size:11px;color:#475569">' + (r.type || '—') + '</td>' +
+        '<td style="font-size:11px">' + (r.rootCause || '—') + '</td>' +
+        '<td><span class="badge ' + (r.sla === 'BREACH' ? 'badge-err' : 'badge-ok') + '">' + (r.sla || 'OK') + '</span></td>' +
+        '<td style="font-size:11px;color:#991b1b;font-weight:600">' + (r.escalateTo || '—') + '</td>' +
+        '<td><div class="response-preview" id="' + previewId + '">' + escHtml(response) + '</div>' +
+          (response.length > 150 ? '<button class="expand-btn" onclick="toggleExpand(\'' + previewId + '\',this)">▼ Xem thêm</button>' : '') +
+        '</td>' +
+      '</tr>';
+    }).join('');
+
+    document.getElementById('batchResultCard').style.display = 'block';
+    document.getElementById('batchResultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function toggleExpand(id, btn) {
+    const el = document.getElementById(id);
+    const expanded = el.classList.toggle('expanded');
+    btn.textContent = expanded ? '▲ Thu gọn' : '▼ Xem thêm';
+  }
+
+  // ── EXPORT BATCH EXCEL ────────────────────────────────────────────────────
+  function exportBatchExcel() {
+    if (!batchResults.length) return;
+    const date = new Date().toISOString().slice(0,10);
+
+    const wsData = [
+      ['Issue Key','Loại vấn đề','Root Cause','SLA Status','Escalate đến','Phản hồi ZaloPay','Trạng thái']
+    ];
+    batchResults.forEach(function(r) {
+      wsData.push([r.key, r.type||'', r.rootCause||'', r.sla||'OK', r.escalateTo||'', r.final_response||r.error||'', r.status==='ok'?'OK':'Lỗi']);
+    });
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // Column widths
+    ws['!cols'] = [16,22,28,11,22,80,10].map(function(w){ return {wch:w}; });
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Phan hoi ZaloPay');
+    XLSX.writeFile(wb, 'zalopay_response_' + date + '.xlsx');
+  }
+
+  // ── HELPERS ────────────────────────────────────────────────────────────────
+  async function callPipeline(ticket, check_result) {
+    const res = await fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ticket, check_result: check_result || '' })
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'HTTP ' + res.status);
+    return data;
+  }
+
+  function showError(msg) {
+    document.getElementById('errorMsg').textContent = '❌ Lỗi: ' + msg;
+    document.getElementById('errorCard').style.display = 'block';
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+</script>
+</body>
+</html>

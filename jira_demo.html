@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZaloPay Jira Analyzer</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; }
+
+    header {
+      background: linear-gradient(135deg, #1e3a5f, #2563eb);
+      color: white; padding: 16px 24px;
+      display: flex; align-items: center; gap: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .logo { width: 36px; height: 36px; background: rgba(255,255,255,0.18); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    header h1 { font-size: 18px; font-weight: 700; }
+    header span { font-size: 12px; opacity: 0.7; margin-left: auto; }
+
+    .container { max-width: 1000px; margin: 28px auto; padding: 0 16px; }
+
+    .card { background: white; border-radius: 12px; padding: 22px; margin-bottom: 18px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .card h2 { font-size: 14px; font-weight: 700; color: #1e293b; margin-bottom: 14px; }
+
+    .upload-zone {
+      border: 2px dashed #cbd5e1; border-radius: 10px; padding: 36px;
+      text-align: center; cursor: pointer; transition: all 0.2s; background: #f8faff;
+    }
+    .upload-zone:hover, .upload-zone.dragover { border-color: #2563eb; background: #eff6ff; }
+    .upload-zone .icon { font-size: 36px; margin-bottom: 10px; }
+    .upload-zone p { font-size: 14px; color: #64748b; }
+    .upload-zone strong { color: #2563eb; }
+    #fileInput { display: none; }
+    .file-selected { background: #f0fdf4; border-color: #86efac; }
+    .file-selected p { color: #166534; }
+
+    .btn {
+      background: linear-gradient(135deg, #1e3a5f, #2563eb);
+      color: white; border: none; border-radius: 9px;
+      padding: 12px 28px; font-size: 14px; font-weight: 600;
+      cursor: pointer; width: 100%; margin-top: 14px; font-family: inherit;
+      box-shadow: 0 4px 14px rgba(37,99,235,0.3); transition: opacity 0.2s;
+    }
+    .btn:disabled { background: #94a3b8; box-shadow: none; cursor: not-allowed; }
+
+    .spinner { display: none; text-align: center; padding: 28px; color: #64748b; font-size: 14px; }
+    .spin { display: inline-block; width: 20px; height: 20px; border: 3px solid #ddd;
+      border-top-color: #2563eb; border-radius: 50%;
+      animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 8px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Summary */
+    .summary-box {
+      background: #eff6ff; border: 1px solid #bfdbfe; border-left: 4px solid #2563eb;
+      border-radius: 8px; padding: 14px 16px; font-size: 14px; color: #1e3a5f;
+      line-height: 1.7; margin-bottom: 18px;
+    }
+
+    /* Insights */
+    .insights-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 18px; }
+    .insight-card { background: #f8faff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; }
+    .insight-label { font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+    .insight-item { font-size: 13px; color: #334155; padding: 3px 0; }
+    .breach-rate { font-size: 22px; font-weight: 700; color: #dc2626; }
+
+    /* Ticket list */
+    .ticket { border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+    .ticket.breach { border-color: #fca5a5; background: #fff5f5; }
+    .ticket.at-risk { border-color: #fed7aa; background: #fffbf5; }
+    .ticket.ok { border-color: #bbf7d0; background: #f0fdf4; }
+    .ticket-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+    .ticket-key { font-weight: 700; color: #1e3a5f; font-size: 14px; }
+    .badge { border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 600; }
+    .badge-breach { background: #fee2e2; color: #dc2626; }
+    .badge-risk { background: #ffedd5; color: #c2410c; }
+    .badge-ok { background: #dcfce7; color: #166534; }
+    .badge-priority { background: #fef9c3; color: #854d0e; }
+    .ticket-type { font-size: 12px; color: #64748b; background: #f1f5f9; border-radius: 12px; padding: 2px 10px; }
+    .ticket-body { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .field-label { font-size: 11px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 4px; }
+    .field-value { font-size: 13px; color: #334155; line-height: 1.6; }
+
+    .error-box { background: #fff0f0; border: 1px solid #ffcccc; border-radius: 8px;
+      padding: 14px; color: #cc0000; font-size: 13px; display: none; }
+
+    .result-section { display: none; }
+
+    .section-title { font-size: 13px; font-weight: 700; color: #475569; text-transform: uppercase;
+      letter-spacing: .5px; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">📋</div>
+  <h1>ZaloPay Jira Analyzer</h1>
+  <span>AI Phân tích Ticket Tự động</span>
+</header>
+
+<div class="container">
+
+  <div class="card">
+    <h2>📂 Upload file Jira Export</h2>
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()"
+         ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)">
+      <div class="icon">📊</div>
+      <p><strong>Chọn file Excel hoặc CSV</strong> hoặc kéo thả vào đây</p>
+      <p style="font-size:12px;margin-top:6px">Hỗ trợ .xlsx và .csv export từ Jira</p>
+    </div>
+    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" onchange="fileSelected(this)">
+    <div style="display:flex;align-items:center;gap:12px;margin-top:14px">
+      <label style="font-size:13px;color:#64748b;white-space:nowrap">Số dòng tối đa:</label>
+      <select id="limitSelect" style="border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;font-family:inherit;background:#f8faff">
+        <option value="5">5 tickets</option>
+        <option value="10" selected>10 tickets</option>
+        <option value="20">20 tickets</option>
+        <option value="50">50 tickets (chậm)</option>
+      </select>
+    </div>
+    <button class="btn" id="analyzeBtn" onclick="analyze()" disabled>🔍 Phân tích Ticket</button>
+  </div>
+
+  <div class="spinner" id="spinner">
+    <div class="spin"></div>
+    <span id="spinnerText">Đang phân tích tickets với AI...</span>
+    <div id="progressBar" style="display:none;margin-top:12px;width:100%;max-width:400px;margin-left:auto;margin-right:auto">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:6px">
+        <span id="progressLabel">Đang xử lý...</span>
+        <span id="progressCount"></span>
+      </div>
+      <div style="background:#e2e8f0;border-radius:99px;height:6px;overflow:hidden">
+        <div id="progressFill" style="height:100%;background:linear-gradient(90deg,#1e3a5f,#2563eb);border-radius:99px;transition:width 0.3s ease;width:0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="error-box" id="errorBox"></div>
+
+  <div class="result-section" id="resultSection">
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div class="section-title" style="margin-bottom:0">📊 Tổng quan</div>
+        <div style="display:flex;gap:8px">
+          <button onclick="exportDashboard()" style="background:linear-gradient(135deg,#1e3a5f,#2563eb);color:white;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">
+            📊 Xuất Dashboard
+          </button>
+          <button onclick="exportExcel()" style="background:linear-gradient(135deg,#166534,#16a34a);color:white;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">
+            📥 Xuất Excel
+          </button>
+        </div>
+      </div>
+      <div class="summary-box" id="summaryBox"></div>
+      <div class="insights-grid" id="insightsGrid"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">🎫 Chi tiết từng Ticket</div>
+      <div id="ticketList"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  const ENDPOINT = 'http://localhost:3002/analyze';
+  let selectedFile = null;
+  let lastResults = [];
+  let ticketMetaMap = {};
+
+  function dragOver(e) { e.preventDefault(); document.getElementById('uploadZone').classList.add('dragover'); }
+  function dragLeave(e) { document.getElementById('uploadZone').classList.remove('dragover'); }
+  function dropFile(e) {
+    e.preventDefault();
+    dragLeave(e);
+    const f = e.dataTransfer.files[0];
+    if (f) setFile(f);
+  }
+  function fileSelected(input) { if (input.files[0]) setFile(input.files[0]); }
+
+  function setFile(f) {
+    selectedFile = f;
+    const zone = document.getElementById('uploadZone');
+    zone.classList.add('file-selected');
+    zone.innerHTML = `<div class="icon">✅</div><p><strong>${f.name}</strong></p><p style="font-size:12px;margin-top:4px">${(f.size/1024).toFixed(1)} KB — nhấn để đổi file</p>`;
+    document.getElementById('analyzeBtn').disabled = false;
+  }
+
+  function toBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function updateProgress(current, total, key) {
+    const pct = Math.round((current / total) * 100);
+    document.getElementById('progressBar').style.display = 'block';
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent = 'Đang phân tích: ' + key;
+    document.getElementById('progressCount').textContent = current + ' / ' + total + ' tickets';
+    document.getElementById('spinnerText').textContent = 'Đang xử lý từng ticket...';
+  }
+
+  function resetProgress() {
+    document.getElementById('progressBar').style.display = 'none';
+    document.getElementById('progressFill').style.width = '0%';
+    document.getElementById('spinnerText').textContent = 'Đang phân tích tickets với AI...';
+  }
+
+  async function analyze() {
+    if (!selectedFile) return;
+    const btn = document.getElementById('analyzeBtn');
+    btn.disabled = true;
+    document.getElementById('spinner').style.display = 'block';
+    document.getElementById('resultSection').style.display = 'none';
+    document.getElementById('errorBox').style.display = 'none';
+    resetProgress();
+
+    try {
+      const b64 = await toBase64(selectedFile);
+      const limit = parseInt(document.getElementById('limitSelect').value);
+
+      // Đọc danh sách issue keys từ Excel/CSV để hiển thị tiến độ
+      const isCsv = selectedFile.name.toLowerCase().endsWith('.csv');
+      let wb;
+      if (isCsv) {
+        // Đọc CSV as UTF-8 text để tránh lỗi font Vietnamese
+        const csvText = await new Promise((resolve, reject) => {
+          const r2 = new FileReader();
+          r2.onload = () => resolve(r2.result);
+          r2.onerror = reject;
+          r2.readAsText(selectedFile, 'UTF-8');
+        });
+        wb = XLSX.read(csvText, { type: 'string' });
+      } else {
+        wb = XLSX.read(b64, { type: 'base64' });
+      }
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+      const keys = rows.slice(0, limit).map((r, i) => r['Issue key'] || r['Issue Key'] || r['Key'] || ('ROW-' + (i+1)));
+
+      // Thu thập metadata cho dashboard export
+      ticketMetaMap = {};
+      rows.slice(0, limit).forEach(r => {
+        const key = r['Issue key'] || r['Issue Key'] || r['Key'] || '';
+        if (key) ticketMetaMap[key] = {
+          root_cause: r['Custom field (Root Cause Type)'] || r['Root Cause Type'] || '',
+          problem: (r['Description'] || r['Summary'] || '').replace(/_x000D_/g,'').replace(/\s+/g,' ').trim().slice(0, 250),
+        };
+      });
+
+      // Giả lập tiến độ trong khi chờ server (server xử lý batch)
+      let fakeIdx = 0;
+      const fakeInterval = setInterval(() => {
+        if (fakeIdx < keys.length) {
+          updateProgress(fakeIdx + 1, keys.length, keys[fakeIdx]);
+          fakeIdx++;
+        } else {
+          clearInterval(fakeInterval);
+        }
+      }, Math.max(800, 2000 / keys.length));
+
+      const res = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ excel_base64: b64, limit })
+      });
+      clearInterval(fakeInterval);
+
+      // Hoàn tất progress bar
+      if (keys.length > 0) updateProgress(keys.length, keys.length, keys[keys.length-1]);
+      await new Promise(r => setTimeout(r, 400));
+
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Lỗi không xác định');
+      lastResults = data.tickets || [];
+      renderResult(data);
+    } catch (e) {
+      document.getElementById('errorBox').textContent = '❌ ' + e.message;
+      document.getElementById('errorBox').style.display = 'block';
+    } finally {
+      btn.disabled = false;
+      document.getElementById('spinner').style.display = 'none';
+      resetProgress();
+    }
+  }
+
+  function renderResult(data) {
+    const tickets = data.tickets || [];
+    const breach = tickets.filter(t => t.sla_status === 'BREACH').length;
+    const atRisk = tickets.filter(t => t.sla_status === 'AT_RISK').length;
+    const priority = tickets.filter(t => t.priority_action).length;
+
+    document.getElementById('summaryBox').textContent =
+      `Tổng ${tickets.length} tickets — ⚠️ ${breach} SLA Breach — 🔶 ${atRisk} At Risk — 🔥 ${priority} cần ưu tiên`;
+
+    document.getElementById('insightsGrid').innerHTML = `
+      <div class="insight-card"><div class="insight-label">Tổng tickets</div><div class="breach-rate" style="color:#1e3a5f">${tickets.length}</div></div>
+      <div class="insight-card"><div class="insight-label">SLA Breach</div><div class="breach-rate">${breach}</div></div>
+      <div class="insight-card"><div class="insight-label">At Risk</div><div class="breach-rate" style="color:#c2410c">${atRisk}</div></div>
+      <div class="insight-card"><div class="insight-label">Cần ưu tiên</div><div class="breach-rate" style="color:#854d0e">${priority}</div></div>`;
+
+    // Tickets
+    const list = document.getElementById('ticketList');
+    list.innerHTML = (data.tickets||[]).map(t => {
+      const cls = t.sla_status === 'BREACH' ? 'breach' : t.sla_status === 'AT_RISK' ? 'at-risk' : 'ok';
+      const slaBadge = t.sla_status === 'BREACH'
+        ? '<span class="badge badge-breach">⚠️ SLA Breach</span>'
+        : t.sla_status === 'AT_RISK'
+        ? '<span class="badge badge-risk">🔶 At Risk</span>'
+        : '<span class="badge badge-ok">✅ OK</span>';
+      const priBadge = t.priority_action ? '<span class="badge badge-priority">🔥 Ưu tiên</span>' : '';
+      return `
+        <div class="ticket ${cls}">
+          <div class="ticket-header">
+            <span class="ticket-key">${t.key||'—'}</span>
+            <span class="ticket-type">${t.type||'—'}</span>
+            ${slaBadge}${priBadge}
+          </div>
+          <div class="ticket-body">
+            <div style="grid-column:1/-1">
+              <div class="field-label">Gợi ý xử lý cho CS</div>
+              <div class="field-value">${t.suggestion||t.error||'—'}</div>
+            </div>
+            ${t.escalate_to ? `<div style="grid-column:1/-1"><div class="field-label">Escalate đến</div><div class="field-value" style="color:#dc2626;font-weight:600">${t.escalate_to}</div></div>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+
+    document.getElementById('resultSection').style.display = 'block';
+  }
+
+  function exportDashboard() {
+    if (!lastResults.length) return;
+    const RC_COLORS = {"User misunderstanding":"#378add","User misuderstanding":"#378add","Human - Configuration":"#ef9f27","Infrastructure - Software":"#e24b4a","External Factors":"#1d9e75","Others":"#888780","User need more Information":"#7f77dd"};
+    const RT_COLORS = ['#ef9f27','#378add','#1d9e75','#7f77dd','#888780','#e24b4a','#5dcaa5','#d4537e'];
+    const RC_COLORS2 = ['#378add','#888780','#ef9f27','#1d9e75','#e24b4a','#7f77dd'];
+
+    const data = lastResults.map(t => ({
+      key: t.key||'', request_type: t.type||'',
+      root_cause: (ticketMetaMap[t.key]||{}).root_cause||'',
+      sla_status: t.sla_status||'OK', priority: !!t.priority_action,
+      escalate: t.escalate_to||'',
+      problem: (ticketMetaMap[t.key]||{}).problem||'',
+      suggestion: t.suggestion||t.error||'',
+    }));
+
+    const total = data.length;
+    const breach_n = data.filter(t=>t.sla_status==='BREACH').length;
+    const prio_n   = data.filter(t=>t.priority).length;
+    const ok_n     = total - breach_n;
+    const dateStr  = new Date().toLocaleDateString('vi-VN');
+
+    const rcCount={}, rtCount={}, escCount={};
+    data.forEach(t=>{
+      if(t.root_cause)     rcCount[t.root_cause]  = (rcCount[t.root_cause]||0)+1;
+      if(t.request_type)   rtCount[t.request_type]= (rtCount[t.request_type]||0)+1;
+      if(t.escalate)       escCount[t.escalate]   = (escCount[t.escalate]||0)+1;
+    });
+    const rcSorted  = Object.entries(rcCount).sort((a,b)=>b[1]-a[1]);
+    const rtSorted  = Object.entries(rtCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    const escSorted = Object.entries(escCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
+
+    const htmlOut = `<!DOCTYPE html>
+<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ZaloPay Jira Dashboard</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"><\/script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f2f5;min-height:100vh;color:#1e293b}
+.hdr{background:#1e3a5f;padding:14px 24px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.hdr-logo{width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px}
+.hdr h1{color:#fff;font-size:16px;font-weight:600;flex:1}.hdr-date{color:rgba(255,255,255,.6);font-size:12px}
+.container{max-width:1200px;margin:24px auto;padding:0 20px}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.metric{background:#fff;border-radius:12px;padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.metric-label{font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.metric-val{font-size:28px;font-weight:700;line-height:1}.metric-val.blue{color:#185fa5}.metric-val.red{color:#a32d2d}.metric-val.amber{color:#854f0b}.metric-val.green{color:#3b6d11}
+.metric-sub{font-size:11px;color:#94a3b8;margin-top:4px}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.chart-card{background:#fff;border-radius:12px;padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.chart-title{font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;font-size:11px;color:#64748b}
+.legend span{display:flex;align-items:center;gap:4px}.legend-dot{width:10px;height:10px;border-radius:2px;display:inline-block;flex-shrink:0}
+.filters-bar{background:#fff;border-radius:12px;padding:14px 18px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.06);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.filters-bar label{font-size:12px;color:#64748b;font-weight:600}
+.filters-bar select{font-size:12px;padding:6px 10px;border-radius:8px;border:1px solid #e2e8f0;background:#f8faff;color:#1e293b;cursor:pointer;font-family:inherit}
+.ticket-count{margin-left:auto;font-size:12px;color:#64748b;font-weight:600}
+.table-wrap{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px}
+th{background:#1e3a5f;color:#fff;font-weight:600;padding:10px 12px;text-align:left;font-size:11px;letter-spacing:.3px}
+th:nth-child(1){width:10%}th:nth-child(2){width:13%}th:nth-child(3){width:20%}th:nth-child(4){width:14%}th:nth-child(5){width:7%}th:nth-child(6){width:7%}th:nth-child(7){width:10%}th:nth-child(8){width:19%}
+td{padding:9px 12px;border-bottom:1px solid #f1f5f9;vertical-align:top;word-wrap:break-word;line-height:1.5}
+tr:last-child td{border-bottom:none}tr.breach td{background:#fff5f5}tr.ok:nth-child(even) td{background:#f8faff}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap}
+.badge-breach{background:#fee2e2;color:#991b1b}.badge-ok{background:#dcfce7;color:#166534}.badge-pri{background:#fef9c3;color:#854d0e}.badge-no{background:#f1f5f9;color:#94a3b8}
+.key-link{font-weight:700;color:#185fa5;font-size:11px}.rc-tag{font-size:10px;padding:2px 7px;border-radius:4px;display:inline-block;font-weight:600}
+.escalate-tag{font-size:10px;color:#991b1b;font-weight:600}.prob-text{font-size:11px;color:#475569;line-height:1.5}.sug-text{font-size:11px;color:#334155;line-height:1.5}
+</style></head><body>
+<div class="hdr"><div class="hdr-logo"><i class="ti ti-chart-bar"></i></div>
+  <h1>ZaloPay Jira Analyzer — Production Issue Dashboard</h1>
+  <span class="hdr-date">${dateStr} &nbsp;·&nbsp; ${total} tickets phân tích</span>
+</div>
+<div class="container">
+<div class="metrics">
+  <div class="metric"><div class="metric-label">Tổng tickets</div><div class="metric-val blue">${total}</div><div class="metric-sub">Production Issue batch</div></div>
+  <div class="metric"><div class="metric-label">SLA Breach</div><div class="metric-val red">${breach_n}</div><div class="metric-sub">${Math.round(breach_n/total*100)}% tỷ lệ vi phạm SLA</div></div>
+  <div class="metric"><div class="metric-label">Cần ưu tiên</div><div class="metric-val amber">${prio_n}</div><div class="metric-sub">Breach hoặc Infrastructure/SW</div></div>
+  <div class="metric"><div class="metric-label">SLA OK</div><div class="metric-val green">${ok_n}</div><div class="metric-sub">${Math.round(ok_n/total*100)}% xử lý đúng hạn</div></div>
+</div>
+<div class="charts-grid">
+  <div class="chart-card"><div class="chart-title">Phân bổ SLA status</div>
+    <div class="legend">
+      <span><span class="legend-dot" style="background:#e24b4a"></span>SLA Breach ${breach_n} (${Math.round(breach_n/total*100)}%)</span>
+      <span><span class="legend-dot" style="background:#639922"></span>SLA OK ${ok_n} (${Math.round(ok_n/total*100)}%)</span>
+    </div>
+    <div style="position:relative;height:170px"><canvas id="c1"></canvas></div>
+  </div>
+  <div class="chart-card"><div class="chart-title">Root cause phân bổ</div>
+    <div style="position:relative;height:200px"><canvas id="c2"></canvas></div>
+  </div>
+  <div class="chart-card"><div class="chart-title">Loại vấn đề (Request Type)</div>
+    <div class="legend" id="leg3"></div>
+    <div style="position:relative;height:160px"><canvas id="c3"></canvas></div>
+  </div>
+  <div class="chart-card"><div class="chart-title">Tickets cần escalate theo team</div>
+    <div style="position:relative;height:200px"><canvas id="c4"></canvas></div>
+  </div>
+</div>
+<div class="filters-bar">
+  <label>Lọc SLA:</label>
+  <select id="fSLA" onchange="render()"><option value="ALL">Tất cả</option><option value="BREACH">Breach</option><option value="OK">OK</option></select>
+  <label>Root cause:</label>
+  <select id="fRC" onchange="render()"><option value="ALL">Tất cả</option>${rcSorted.map(([k])=>`<option value="${k}">${k}</option>`).join('')}</select>
+  <label>Ưu tiên:</label>
+  <select id="fPri" onchange="render()"><option value="ALL">Tất cả</option><option value="1">Cần ưu tiên</option><option value="0">Bình thường</option></select>
+  <span class="ticket-count" id="cnt"></span>
+</div>
+<div class="table-wrap"><table>
+  <thead><tr><th>Issue Key</th><th>Loại vấn đề</th><th>Vấn đề khách hàng</th><th>Root Cause</th><th>SLA</th><th>Ưu tiên</th><th>Escalate đến</th><th>Gợi ý xử lý CS</th></tr></thead>
+  <tbody id="tbody"></tbody>
+</table></div></div>
+<script>
+const DATA=${JSON.stringify(data)};
+const RC_COLORS=${JSON.stringify(RC_COLORS)};
+const TOTAL=${total};
+function render(){
+  const sl=document.getElementById('fSLA').value,rc=document.getElementById('fRC').value,pr=document.getElementById('fPri').value;
+  const f=DATA.filter(t=>{
+    if(sl!=='ALL'&&t.sla_status!==sl)return false;
+    if(rc!=='ALL'&&t.root_cause!==rc)return false;
+    if(pr==='1'&&!t.priority)return false;
+    if(pr==='0'&&t.priority)return false;
+    return true;
+  });
+  document.getElementById('cnt').textContent=f.length+' / '+TOTAL+' tickets';
+  document.getElementById('tbody').innerHTML=f.map(t=>{
+    const c=RC_COLORS[t.root_cause]||'#aaa',bg=c+'22';
+    return \`<tr class="\${t.sla_status==='BREACH'?'breach':'ok'}">
+      <td><span class="key-link">\${t.key}</span></td>
+      <td style="font-size:11px;color:#475569">\${t.request_type}</td>
+      <td class="prob-text">\${t.problem||'—'}</td>
+      <td><span class="rc-tag" style="background:\${bg};color:\${c}">\${t.root_cause||'—'}</span></td>
+      <td><span class="badge \${t.sla_status==='BREACH'?'badge-breach':'badge-ok'}">\${t.sla_status}</span></td>
+      <td><span class="badge \${t.priority?'badge-pri':'badge-no'}">\${t.priority?'Ưu tiên':'—'}</span></td>
+      <td><span class="escalate-tag">\${t.escalate||'—'}</span></td>
+      <td class="sug-text">\${t.suggestion}</td>
+    </tr>\`;
+  }).join('');
+}
+render();
+new Chart(document.getElementById('c1'),{type:'doughnut',data:{labels:['SLA Breach','SLA OK'],datasets:[{data:[${breach_n},${ok_n}],backgroundColor:['#e24b4a','#639922'],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:d=>' '+d.label+': '+d.raw+' tickets'}}}}});
+new Chart(document.getElementById('c2'),{type:'bar',data:{labels:${JSON.stringify(rcSorted.map(([k])=>k))},datasets:[{data:${JSON.stringify(rcSorted.map(([,v])=>v))},backgroundColor:${JSON.stringify(rcSorted.map((_,i)=>RC_COLORS2[i]||'#888'))},borderWidth:0,borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{stepSize:1,font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}});
+const rtL=${JSON.stringify(rtSorted.map(([k])=>k))},rtD=${JSON.stringify(rtSorted.map(([,v])=>v))},rtC=${JSON.stringify(RT_COLORS.slice(0,rtSorted.length))};
+document.getElementById('leg3').innerHTML=rtL.map((l,i)=>\`<span><span class="legend-dot" style="background:\${rtC[i]}"></span>\${l} \${rtD[i]}</span>\`).join('');
+new Chart(document.getElementById('c3'),{type:'doughnut',data:{labels:rtL,datasets:[{data:rtD,backgroundColor:rtC,borderWidth:0,hoverOffset:3}]},options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{display:false},tooltip:{callbacks:{label:d=>' '+d.label+': '+d.raw}}}}});
+new Chart(document.getElementById('c4'),{type:'bar',data:{labels:${JSON.stringify(escSorted.map(([k])=>k))},datasets:[{data:${JSON.stringify(escSorted.map(([,v])=>v))},backgroundColor:${JSON.stringify(['#ef9f27','#e24b4a','#7f77dd','#1d9e75','#888780','#378add','#5dcaa5','#d4537e'].slice(0,escSorted.length))},borderWidth:0,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},maxRotation:25},grid:{display:false}},y:{ticks:{stepSize:1,font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}}}}});
+<\/script></body></html>`;
+
+    const d = new Date().toISOString().slice(0,10);
+    const blob = new Blob([htmlOut], {type:'text/html;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `jira_dashboard_${d}.html`; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function exportExcel() {
+    if (!lastResults.length) return;
+    const btn = document.querySelector('button[onclick="exportExcel()"]');
+    const origText = btn.innerHTML;
+    btn.innerHTML = '⏳ Đang xuất...';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch('http://localhost:3002/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tickets: lastResults })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Lỗi xuất file' }));
+        throw new Error(err.error || 'Lỗi xuất file');
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const date = new Date().toISOString().slice(0,10);
+      a.href = url; a.download = `jira_analysis_${date}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch(e) {
+      alert('Lỗi xuất Excel: ' + e.message);
+    } finally {
+      btn.innerHTML = origText;
+      btn.disabled = false;
+    }
+  }
+</script>
+</body>
+</html>

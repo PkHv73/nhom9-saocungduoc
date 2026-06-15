@@ -1,0 +1,28 @@
+__pycache__/
+*.py[cod]
+.env
+.greennode.json
+.agentbase/
+.agentbase-state.json
+*.credentials.json
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+package-lock.json
+
+# Output files (dữ liệu thực tế, không commit)
+jira_analysis*.xlsx
+jira_analysis*.csv
+*.docx
+~$*
+
+# Temp
+demo2.html
+jira_dashboard.html
+jira_server.py
+jira_server.js
