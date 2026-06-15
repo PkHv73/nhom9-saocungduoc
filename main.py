@@ -1,17 +1,19 @@
+"""
+ZaloPay CSKH Agent — HTTP Server cho GreenNode AgentBase
+=========================================================
+Nhận request từ AgentBase, gọi pipeline xử lý ticket, trả về kết quả JSON.
+"""
+
 import os
 from dotenv import load_dotenv
-from greennode_agentbase import (
-    GreenNodeAgentBaseApp,
-    RequestContext,
-    PingStatus,
-)
+from greennode_agentbase import GreenNodeAgentBaseApp, RequestContext, PingStatus
 from agent import run_pipeline
 
 load_dotenv()
 
 app = GreenNodeAgentBaseApp()
 
-# Thêm CORS middleware để cho phép trình duyệt gọi API trực tiếp
+# CORS middleware (cho phép test trực tiếp từ trình duyệt)
 try:
     from fastapi.middleware.cors import CORSMiddleware
     app.app.add_middleware(
@@ -26,13 +28,38 @@ except Exception:
 
 @app.entrypoint
 def handler(payload: dict, context: RequestContext) -> dict:
+    """
+    Xử lý ticket CSKH.
+
+    Input payload:
+        ticket (str): Nội dung ticket từ khách hàng. Bắt buộc.
+        check_result (str): Kết quả kiểm tra hệ thống. Tùy chọn.
+
+    Output:
+        success (bool): Pipeline thành công hay không.
+        error (str|null): Thông báo lỗi nếu có.
+        classification (dict): Kết quả phân loại ticket.
+        analysis (dict): Kết quả phân tích nghiệp vụ.
+        final_response (str): Phản hồi chuẩn gửi khách hàng.
+        needs_human_review (bool): True nếu cần nhân viên xem lại.
+        session_id (str): Session ID từ AgentBase.
+    """
     ticket = payload.get("ticket", "")
     check_result = payload.get("check_result", "")
 
     if not ticket.strip():
-        return {"success": False, "error": "Trường 'ticket' không được để trống."}
+        return {
+            "success": False,
+            "error": "Trường 'ticket' không được để trống.",
+            "classification": None,
+            "analysis": None,
+            "final_response": "",
+            "needs_human_review": False,
+            "session_id": context.session_id,
+        }
 
     result = run_pipeline(ticket, check_result)
+
     return {
         "success": result.success,
         "error": result.error,

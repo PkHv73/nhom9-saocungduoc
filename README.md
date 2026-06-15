@@ -1,241 +1,145 @@
-# ZaloPay CSKH Multi-Agent Pipeline
+# ZaloPay CSKH AI Agent
 
-Hệ thống AI đa tác nhân xử lý ticket chăm sóc khách hàng ZaloPay theo pipeline 4 bước tuần tự, sử dụng Claude của Anthropic.
-
-## Kiến trúc
-
-```
-Ticket + Kết quả kiểm tra
-        ↓
-  [Agent 1] Phân loại Ticket
-        ↓  JSON: category, sub_category, merchant, transaction_id...
-  [Agent 2] Phân tích Nghiệp vụ
-        ↓  JSON: root_cause, refund_allowed, next_action...
-  [Agent 3] Soạn thảo Phản hồi
-        ↓  Văn bản thô
-  [Agent 0] Chuẩn hóa Văn phong ZaloPay
-        ↓
-  Phản hồi hoàn chỉnh gửi khách hàng
-```
+Agent AI xử lý ticket chăm sóc khách hàng ZaloPay — phân loại, phân tích nghiệp vụ và soạn phản hồi chuẩn trong 1 lần gọi LLM.
 
 ## Yêu cầu
 
-- Python 3.10+
-- Anthropic API Key — lấy tại [console.anthropic.com](https://console.anthropic.com)
+- Python 3.12+
+- Docker (để build và deploy)
+- API key VNG MaaS (LLM_API_KEY)
 
-## Cài đặt nhanh
+## Chạy local
 
 ```bash
-# 1. Clone hoặc copy thư mục
-cd zalopay-agent
-
-# 2. Tạo virtualenv
-python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
-
-# 3. Cài thư viện
+# Cài dependencies
 pip install -r requirements.txt
 
-# 4. Cấu hình API key
-cp .env.example .env
-# Mở .env và điền ANTHROPIC_API_KEY=sk-ant-...
-```
+# Thiết lập biến môi trường
+export LLM_API_KEY=your_api_key
+export LLM_BASE_URL=https://maas-llm-aiplatform-hcm.api.vngcloud.vn/v1
 
-## Sử dụng
-
-### Chế độ tương tác (nhập thủ công)
-
-```bash
+# Chạy tương tác
 python agent.py
-```
 
-Hệ thống sẽ hỏi tuần tự nội dung ticket và kết quả kiểm tra.
-
----
-
-### Truyền tham số trực tiếp
-
-```bash
+# Chạy với đối số
 python agent.py \
-  --ticket "KH mua data Viettel thành công nhưng chưa nhận. Mã GD 260611004463951." \
-  --check-result "Nhà mạng xác nhận gói 1N_TMDT đã được cộng thành công."
+  --ticket "KH mua data Viettel thành công nhưng chưa nhận." \
+  --check-result "Nhà mạng xác nhận đã cấp dịch vụ thành công."
+
+# Chạy từ file JSON
+python agent.py --input input.json --output output.json --pretty
 ```
 
----
-
-### Đọc từ file JSON đầu vào
-
-Tạo file `input.json`:
+### Ví dụ input.json
 
 ```json
 {
-  "ticket": "KH mua data Viettel thành công nhưng chưa nhận. Mã GD 260611004463951.",
-  "check_result": "Nhà mạng xác nhận gói 1N_TMDT đã được cộng thành công."
+  "ticket": "Tôi chuyển tiền 500k cho bạn nhưng chuyển nhầm số tài khoản. Mã giao dịch TXN20240615001.",
+  "check_result": "Giao dịch đã thành công, tiền đã vào tài khoản người nhận."
 }
 ```
 
-Chạy:
+## Deploy lên GreenNode AgentBase
+
+### Bước 1: Build và push Docker image
 
 ```bash
-python agent.py --input input.json
+# Build image
+docker build -t vcr.vngcloud.vn/<project-id>/zalopay-cskh-agent:v$(date +%Y%m%d%H%M%S) .
+
+# Login VCR
+docker login vcr.vngcloud.vn -u <username>
+
+# Push image
+docker push vcr.vngcloud.vn/<project-id>/zalopay-cskh-agent:v<timestamp>
 ```
 
----
+### Bước 2: Cập nhật agent trên GreenNode
 
-### Xuất kết quả ra file JSON
+1. Vào GreenNode Console → AgentBase → zalopay-cskh-agent
+2. Nhấn **Thay đổi**
+3. Cập nhật **Đường dẫn image** với tag mới
+4. Nhập credentials VCR → **Lưu**
+5. Kiểm tra tab **Phiên bản** — version mới sẽ được tạo tự động
 
-```bash
-python agent.py --input input.json --output output.json
+## API
+
+### Endpoint
+
+```
+POST /invocations
+Content-Type: application/json
 ```
 
-File `output.json` sẽ có cấu trúc:
+### Request
+
+```json
+{
+  "ticket": "Nội dung ticket từ khách hàng",
+  "check_result": "Kết quả kiểm tra hệ thống (tùy chọn)"
+}
+```
+
+### Response
 
 ```json
 {
   "success": true,
   "error": null,
-  "classification": { "category": "TELCO", "sub_category": "DATA_SUCCESS_NO_SERVICE", ... },
-  "analysis": { "root_cause": "...", "refund_allowed": false, ... },
-  "draft_response": "...",
-  "final_response": "Chào bạn, ..."
+  "classification": {
+    "category": "TELCO",
+    "sub_category": "DATA_SUCCESS_NO_SERVICE",
+    "merchant": null,
+    "transaction_id": null,
+    "phone_number": "0901234567",
+    "amount": "50000",
+    "customer_request": "Mua data thành công nhưng chưa nhận",
+    "confidence": "high"
+  },
+  "analysis": {
+    "root_cause": "Nhà mạng đã cấp nhưng thiết bị chưa cập nhật",
+    "refund_allowed": false,
+    "next_action": "Hướng dẫn khách tắt bật dữ liệu di động và khởi động lại thiết bị",
+    "customer_responsibility": null,
+    "escalate": false
+  },
+  "final_response": "Chào bạn,\nZalopay xin lỗi vì đã để bạn có những trải nghiệm không tốt...",
+  "needs_human_review": false,
+  "session_id": "session-abc123"
 }
 ```
 
----
+### Trường `needs_human_review`
 
-### In JSON đẹp ra stdout
-
-```bash
-python agent.py --ticket "..." --pretty
-```
-
----
-
-## Chạy với Docker
-
-### Build image
-
-```bash
-docker build -t zalopay-agent .
-```
-
-### Chạy tương tác
-
-```bash
-docker run -it \
-  -e ANTHROPIC_API_KEY=sk-ant-... \
-  zalopay-agent
-```
-
-### Truyền tham số
-
-```bash
-docker run --rm \
-  -e ANTHROPIC_API_KEY=sk-ant-... \
-  zalopay-agent \
-  --ticket "KH mua data Viettel thành công nhưng chưa nhận." \
-  --check-result "Nhà mạng xác nhận đã cấp dịch vụ."
-```
-
-### Dùng file đầu vào / đầu ra
-
-```bash
-docker run --rm \
-  -e ANTHROPIC_API_KEY=sk-ant-... \
-  -v $(pwd)/data:/data \
-  zalopay-agent \
-  --input /data/input.json \
-  --output /data/output.json
-```
-
----
+- `true`: Ticket có confidence thấp → cần nhân viên CSKH xem lại
+- `false`: Đã xử lý tự động thành công
 
 ## Biến môi trường
 
 | Biến | Mô tả | Mặc định |
 |------|-------|----------|
-| `ANTHROPIC_API_KEY` | API key Anthropic (**bắt buộc**) | — |
-| `MODEL` | Model Claude | `claude-sonnet-4-6` |
-| `MAX_TOKENS` | Token tối đa mỗi lần gọi | `1000` |
-| `LOG_LEVEL` | Mức log (`DEBUG` / `INFO` / `WARNING`) | `INFO` |
+| `LLM_API_KEY` | API key VNG MaaS | *(bắt buộc)* |
+| `LLM_BASE_URL` | Base URL LLM API | `https://maas-llm-aiplatform-hcm.api.vngcloud.vn/v1` |
+| `LLM_MODEL` | Model sử dụng | `minimax/minimax-m2.5` |
+| `MAX_TOKENS` | Token tối đa mỗi lần gọi | `1500` |
+| `LOG_LEVEL` | DEBUG / INFO / WARNING | `INFO` |
 
----
-
-## Ví dụ đầu ra
-
-```
-────────────────────────────────────────────────────────────
-✅ PIPELINE HOÀN TẤT
-
-[Agent 1] Phân loại Ticket:
-{
-  "category": "TELCO",
-  "sub_category": "DATA_SUCCESS_NO_SERVICE",
-  "merchant": "VIETTEL",
-  "transaction_id": "260611004463951",
-  ...
-}
-
-────────────────────────────────────────────────────────────
-[Agent 2] Phân tích Nghiệp vụ:
-{
-  "root_cause": "Nhà mạng xác nhận đã cấp dịch vụ thành công",
-  "refund_allowed": false,
-  "next_action": "Yêu cầu khách hàng liên hệ Viettel xác nhận",
-  ...
-}
-
-────────────────────────────────────────────────────────────
-[Agent 0] Phản hồi chuẩn ZaloPay:
-
-Chào bạn,
-
-ZaloPay rất tiếc khi bạn chưa nhận được gói dữ liệu sau khi
-giao dịch thành công...
-
-Cảm ơn bạn đã tin tưởng và sử dụng dịch vụ ZaloPay!
-────────────────────────────────────────────────────────────
-```
-
----
-
-## Tích hợp vào code Python khác
-
-```python
-from agent import run_pipeline
-
-result = run_pipeline(
-    ticket="KH mua data Viettel thành công nhưng chưa nhận. Mã GD 260611004463951.",
-    check_result="Nhà mạng xác nhận gói 1N_TMDT đã được cộng thành công.",
-)
-
-if result.success:
-    print(result.final_response)
-    print("Hoàn tiền:", result.analysis.refund_allowed)
-    print("Cần leo thang:", result.analysis.escalate)
-else:
-    print("Lỗi:", result.error)
-```
-
----
-
-## Cấu trúc thư mục
+## Kiến trúc
 
 ```
-zalopay-agent/
-├── CLAUDE.md           # Context cho Claude Code
-├── agent.py            # Pipeline chính
-├── requirements.txt    # Thư viện Python
-├── Dockerfile          # Container image
-├── .env.example        # Mẫu biến môi trường
-└── README.md           # File này
+[GreenNode AgentBase]
+        │
+        ▼
+   main.py (HTTP server)
+        │
+        ▼
+   agent.py → run_pipeline()
+        │
+        ▼
+   [VNG MaaS LLM API]
+   minimax/minimax-m2.5
+        │
+        ▼
+   PipelineResult
+   (classification + analysis + final_response)
 ```
-
----
-
-## Mở rộng
-
-- **Thêm nghiệp vụ mới:** Chỉnh sửa `AGENT2_SYSTEM` prompt, thêm quy tắc xử lý
-- **Thêm loại ticket mới:** Cập nhật ví dụ trong `AGENT1_SYSTEM`
-- **Tích hợp API nội bộ:** Gọi API kiểm tra hệ thống trước khi chạy Agent 2, truyền kết quả vào `check_result`
-- **Batch processing:** Vòng lặp `run_pipeline()` trên danh sách ticket, lưu kết quả vào JSONL

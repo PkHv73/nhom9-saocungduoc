@@ -1,68 +1,97 @@
-# ZaloPay CSKH Multi-Agent Pipeline
+# ZaloPay CSKH AI Agent
 
 ## Tổng quan
 
-Hệ thống AI đa tác nhân xử lý ticket chăm sóc khách hàng ZaloPay theo pipeline 3 bước tuần tự.
+Agent AI xử lý ticket chăm sóc khách hàng ZaloPay. Thực hiện phân loại ticket, phân tích nghiệp vụ và soạn phản hồi chuẩn trong **1 lần gọi LLM duy nhất**.
 
-## Kiến trúc Pipeline
-
-```
-Ticket đầu vào + Kết quả kiểm tra
-        ↓
-  [Agent 1] Phân loại Ticket      → JSON: category, sub_category, merchant, transaction_id
-        ↓
-  [Agent 2] Phân tích Nghiệp vụ   → JSON: root_cause, refund_allowed, next_action
-        ↓
-  [Agent 0] Soạn thảo & Chuẩn hóa → Phản hồi chuẩn ZaloPay gửi khách hàng
-```
-
-## Các Agent
-
-### Agent 1 — Classifier (Phân loại Ticket)
-- **Input:** Nội dung ticket thô từ khách hàng
-- **Output:** JSON có các trường: `category`, `sub_category`, `merchant`, `transaction_id`, `phone_number`, `amount`, `customer_request`
-- **Quy tắc:** Chỉ trả về JSON, không thêm văn bản giải thích
-
-### Agent 2 — Resolver (Phân tích Nghiệp vụ)
-- **Input:** JSON từ Agent 1 + kết quả kiểm tra hệ thống
-- **Output:** JSON có các trường: `root_cause`, `refund_allowed`, `next_action`, `customer_responsibility`, `escalate`
-- **Quy tắc:** Không suy diễn ngoài thông tin được cung cấp; nếu đối tác xác nhận thành công thì `refund_allowed = false`
-
-### Agent 0 — Responder (Soạn thảo & Chuẩn hóa Văn phong)
-- **Input:** JSON từ Agent 1 + JSON từ Agent 2
-- **Output:** Phản hồi chuẩn ZaloPay hoàn chỉnh
-- **Quy tắc bắt buộc:**
-  - Bắt đầu bằng "Chào bạn,"
-  - Không dùng tiếng Anh
-  - Luôn dùng thương hiệu "ZaloPay"
-  - Không dùng từ tiêu cực: "không biết", "không phải trách nhiệm của ZaloPay", "khách hàng nhập sai"
-  - Thêm lời xin lỗi khi khách đang khiếu nại
-  - Kết thúc bằng lời cảm ơn của ZaloPay
-
-## Cấu trúc thư mục
+## Kiến trúc
 
 ```
-zalopay-agent/
-├── CLAUDE.md           # File này — context cho Claude Code
-├── agent.py            # Pipeline chính
-├── requirements.txt    # Thư viện Python
+Input: ticket + check_result
+        ↓
+  [Single LLM Call]
+  - Phân loại ticket (category, sub_category, confidence...)
+  - Phân tích nghiệp vụ (root_cause, refund_allowed, escalate...)
+  - Soạn phản hồi chuẩn ZaloPay (final_response)
+        ↓
+Output: PipelineResult (classification + analysis + final_response + needs_human_review)
+```
+
+## Cấu trúc file
+
+```
+zalopay-cskh-agent/
+├── CLAUDE.md           # File này — context cho Claude
+├── agent.py            # Pipeline chính + CLI
+├── main.py             # HTTP server cho GreenNode AgentBase
+├── requirements.txt    # Python dependencies
 ├── Dockerfile          # Container image
-├── README.md           # Hướng dẫn sử dụng
-└── .env.example        # Mẫu biến môi trường
+└── README.md           # Hướng dẫn deploy và sử dụng
 ```
 
 ## Biến môi trường
 
-| Biến | Mô tả | Bắt buộc |
+| Biến | Mô tả | Mặc định |
 |------|-------|----------|
-| `ANTHROPIC_API_KEY` | API key của Anthropic | ✅ |
-| `MODEL` | Model Claude sử dụng (mặc định: claude-sonnet-4-6) | ❌ |
-| `MAX_TOKENS` | Số token tối đa mỗi lần gọi (mặc định: 1000) | ❌ |
-| `LOG_LEVEL` | Mức log: DEBUG / INFO / WARNING (mặc định: INFO) | ❌ |
+| `LLM_API_KEY` | API key VNG MaaS | *(bắt buộc)* |
+| `LLM_BASE_URL` | Base URL của LLM API | `https://maas-llm-aiplatform-hcm.api.vngcloud.vn/v1` |
+| `LLM_MODEL` | Model sử dụng | `minimax/minimax-m2.5` |
+| `MAX_TOKENS` | Số token tối đa mỗi lần gọi | `1500` |
+| `LOG_LEVEL` | Mức log: DEBUG/INFO/WARNING | `INFO` |
+
+## Output schema
+
+```json
+{
+  "success": true,
+  "error": null,
+  "classification": {
+    "category": "TELCO",
+    "sub_category": "DATA_SUCCESS_NO_SERVICE",
+    "merchant": null,
+    "transaction_id": "TXN123",
+    "phone_number": "0901234567",
+    "amount": "50000",
+    "customer_request": "Mua data thành công nhưng chưa nhận",
+    "confidence": "high"
+  },
+  "analysis": {
+    "root_cause": "Nhà mạng đã cấp nhưng thiết bị chưa nhận",
+    "refund_allowed": false,
+    "next_action": "Hướng dẫn khách kiểm tra lại thiết bị",
+    "customer_responsibility": null,
+    "escalate": false
+  },
+  "final_response": "Chào bạn,\nZalopay xin lỗi...",
+  "needs_human_review": false,
+  "session_id": "abc123"
+}
+```
+
+## Quy tắc Agent
+
+### Phân loại (category)
+- `TELCO`: Nạp tiền điện thoại, mua gói data, gói cước
+- `BANKING`: Chuyển khoản ngân hàng, liên kết tài khoản
+- `WALLET`: Ví ZaloPay, nạp/rút tiền
+- `TOPUP`: Nạp tiền game, thẻ cào
+- `PAYMENT`: Thanh toán hóa đơn, mua sắm
+
+### Confidence
+- `high`: Thông tin đầy đủ, tình huống rõ ràng
+- `medium`: Đủ thông tin để xử lý nhưng còn một số điểm chưa chắc chắn
+- `low`: Thiếu thông tin quan trọng → `needs_human_review = true`
+
+### Chuẩn văn phong ZaloPay
+- Bắt đầu: "Chào bạn,"
+- Thương hiệu: "Zalopay" (không phải "ZaloPay")
+- Không dùng từ tiêu cực hoặc đổ lỗi cho khách hàng
+- Kết thúc bằng lời cảm ơn
 
 ## Lưu ý khi phát triển
 
-- Mỗi agent là một hàm độc lập, có thể test riêng lẻ
-- Agent 1 và Agent 2 trả về JSON — luôn dùng `safe_parse_json()` để parse
-- Nếu JSON parse thất bại, pipeline raise `AgentParseError` và dừng
-- Toàn bộ output mỗi bước được log ở mức DEBUG để dễ debug
+- `agent.py` là module độc lập, có thể test riêng qua CLI
+- `safe_parse_json()` xử lý thinking tokens và markdown fences
+- `normalize_brand()` chuẩn hóa "ZaloPay" → "Zalopay" trong toàn bộ response
+- Retry 1 lần tự động khi LLM call thất bại
+- GreenNode AgentBase inject `LLM_API_KEY` và `LLM_BASE_URL` qua env vars khi deploy

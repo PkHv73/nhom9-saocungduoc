@@ -1,0 +1,56 @@
+name: Deploy zalopay-cskh-agent
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - agent.py
+      - main.py
+      - requirements.txt
+      - Dockerfile
+
+env:
+  REGISTRY: vcr.vngcloud.vn
+  IMAGE: vcr.vngcloud.vn/111480-abp112121/zalopay-cskh-agent
+
+jobs:
+  build-and-push:
+    name: Build & Push to VCR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate image tag
+        id: tag
+        run: echo "TAG=v$(date -u +'%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
+
+      - name: Login to VCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.VCR_USERNAME }}
+          password: ${{ secrets.VCR_PASSWORD }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:${{ steps.tag.outputs.TAG }}
+            ${{ env.IMAGE }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Summary
+        run: |
+          echo "## Deploy thành công! 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** \`${{ env.IMAGE }}:${{ steps.tag.outputs.TAG }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Bước tiếp theo:** Vào GreenNode → zalopay-cskh-agent → Thay đổi → cập nhật image tag thành \`${{ steps.tag.outputs.TAG }}\`" >> $GITHUB_STEP_SUMMARY
