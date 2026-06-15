@@ -1,16 +1,6 @@
 {
-  "version": 2,
   "functions": {
-    "api/pipeline.js": { "maxDuration": 60 },
-    "api/analyze.js": { "maxDuration": 60 }
-  },
-  "builds": [
-    { "src": "api/*.js", "use": "@vercel/node" },
-    { "src": "*.html", "use": "@vercel/static" }
-  ],
-  "routes": [
-    { "src": "/api/pipeline", "dest": "/api/pipeline.js" },
-    { "src": "/api/analyze", "dest": "/api/analyze.js" },
-    { "src": "/(.*\\.html)", "dest": "/$1" }
-  ]
+    "api/pipeline.js": { "maxDuration": 300 },
+    "api/analyze.js": { "maxDuration": 300 }
+  }
 }
