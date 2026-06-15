@@ -300,7 +300,17 @@
 
 <script>
   const ENDPOINT = '/api/pipeline';
+  const CONCURRENCY = 3; // số ticket xử lý song song
   document.getElementById('endpointNote').textContent = 'Endpoint: ' + ENDPOINT;
+
+  // Warm-up: gọi trước để server không bị cold start khi dùng thật
+  window.addEventListener('load', function() {
+    fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ticket: 'warm', check_result: '' })
+    }).catch(function() {});
+  });
 
   // ── SAMPLES ────────────────────────────────────────────────────────────────
   const samples = [
@@ -397,44 +407,49 @@
     document.getElementById('batchProgress').style.display = 'block';
     document.getElementById('batchResultCard').style.display = 'none';
     document.getElementById('errorCard').style.display = 'none';
-    batchResults = [];
+    batchResults = new Array(rows.length).fill(null);
 
-    let ok = 0, fail = 0;
+    let completed = 0, ok = 0, fail = 0;
 
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
-      const key = row['Issue Key'] || row['Issue key'] || ('ROW-' + (i+1));
-      const type = row['Loại vấn đề'] || row['Loai van de'] || '';
-      const rootCause = row['Root Cause'] || '';
-      const sla = row['SLA Status'] || 'OK';
-      const escalateTo = row['Escalate đến'] || row['Escalate den'] || '';
-      const suggestion = row['Gợi ý xử lý CS'] || row['Goi y xu ly CS'] || '';
+    // Xử lý song song theo từng chunk CONCURRENCY ticket cùng lúc
+    for (let i = 0; i < rows.length; i += CONCURRENCY) {
+      const chunk = rows.slice(i, Math.min(i + CONCURRENCY, rows.length));
 
-      // Cập nhật progress
-      const pct = Math.round((i / rows.length) * 100);
-      document.getElementById('batchFill').style.width = pct + '%';
-      document.getElementById('batchProgressLabel').innerHTML =
-        '<span class="spinner-inline"></span>Đang xử lý: <strong>' + key + '</strong>';
-      document.getElementById('batchProgressCount').textContent = i + ' / ' + rows.length;
+      await Promise.all(chunk.map(async function(row, ci) {
+        const idx = i + ci;
+        const key = row['Issue Key'] || row['Issue key'] || ('ROW-' + (idx+1));
+        const type = row['Loại vấn đề'] || row['Loai van de'] || '';
+        const rootCause = row['Root Cause'] || '';
+        const sla = row['SLA Status'] || 'OK';
+        const escalateTo = row['Escalate đến'] || row['Escalate den'] || '';
+        const suggestion = row['Gợi ý xử lý CS'] || row['Goi y xu ly CS'] || '';
 
-      // Build ticket content từ dữ liệu Jira
-      const ticketText = buildTicketText(key, type, rootCause, suggestion, escalateTo);
-      const checkResult = buildCheckResult(rootCause, suggestion, escalateTo);
+        const ticketText = buildTicketText(key, type, rootCause, suggestion, escalateTo);
+        const checkResult = buildCheckResult(rootCause, suggestion, escalateTo);
 
-      try {
-        const data = await callPipeline(ticketText, checkResult);
-        batchResults.push({
-          key, type, rootCause, sla, escalateTo,
-          final_response: data.final_response || '',
-          classification: data.classification || {},
-          analysis: data.analysis || {},
-          status: 'ok'
-        });
-        ok++;
-      } catch(err) {
-        batchResults.push({ key, type, rootCause, sla, escalateTo, final_response: '', error: err.message, status: 'error' });
-        fail++;
-      }
+        try {
+          const data = await callPipeline(ticketText, checkResult);
+          batchResults[idx] = {
+            key, type, rootCause, sla, escalateTo,
+            final_response: data.final_response || '',
+            classification: data.classification || {},
+            analysis: data.analysis || {},
+            status: 'ok'
+          };
+          ok++;
+        } catch(err) {
+          batchResults[idx] = { key, type, rootCause, sla, escalateTo, final_response: '', error: err.message, status: 'error' };
+          fail++;
+        }
+
+        // Cập nhật progress sau mỗi ticket hoàn thành
+        completed++;
+        const pct = Math.round((completed / rows.length) * 100);
+        document.getElementById('batchFill').style.width = pct + '%';
+        document.getElementById('batchProgressLabel').innerHTML =
+          '<span class="spinner-inline"></span>Đang xử lý song song... <strong>' + completed + ' / ' + rows.length + '</strong> ticket';
+        document.getElementById('batchProgressCount').textContent = completed + ' / ' + rows.length;
+      }));
     }
 
     // Done
