@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ZaloPay Jira Dashboard</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f2f5;min-height:100vh;color:#1e293b}
+.hdr{background:#1e3a5f;padding:14px 24px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.hdr-logo{width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px}
+.hdr h1{color:#fff;font-size:16px;font-weight:600;flex:1}.hdr-date{color:rgba(255,255,255,.6);font-size:12px}
+.container{max-width:1200px;margin:24px auto;padding:0 20px}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.metric{background:#fff;border-radius:12px;padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.metric-label{font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.metric-val{font-size:28px;font-weight:700;line-height:1}.metric-val.blue{color:#185fa5}.metric-val.red{color:#a32d2d}.metric-val.amber{color:#854f0b}.metric-val.green{color:#3b6d11}
+.metric-sub{font-size:11px;color:#94a3b8;margin-top:4px}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.chart-card{background:#fff;border-radius:12px;padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.chart-title{font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;font-size:11px;color:#64748b}
+.legend span{display:flex;align-items:center;gap:4px}.legend-dot{width:10px;height:10px;border-radius:2px;display:inline-block;flex-shrink:0}
+.filters-bar{background:#fff;border-radius:12px;padding:14px 18px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.06);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.filters-bar label{font-size:12px;color:#64748b;font-weight:600}
+.filters-bar select{font-size:12px;padding:6px 10px;border-radius:8px;border:1px solid #e2e8f0;background:#f8faff;color:#1e293b;cursor:pointer;font-family:inherit}
+.ticket-count{margin-left:auto;font-size:12px;color:#64748b;font-weight:600}
+.table-wrap{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px}
+th{background:#1e3a5f;color:#fff;font-weight:600;padding:10px 12px;text-align:left;font-size:11px;letter-spacing:.3px}
+th:nth-child(1){width:10%}th:nth-child(2){width:13%}th:nth-child(3){width:20%}th:nth-child(4){width:14%}th:nth-child(5){width:7%}th:nth-child(6){width:7%}th:nth-child(7){width:10%}th:nth-child(8){width:19%}
+td{padding:9px 12px;border-bottom:1px solid #f1f5f9;vertical-align:top;word-wrap:break-word;line-height:1.5}
+tr:last-child td{border-bottom:none}tr.breach td{background:#fff5f5}tr.ok:nth-child(even) td{background:#f8faff}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap}
+.badge-breach{background:#fee2e2;color:#991b1b}.badge-ok{background:#dcfce7;color:#166534}.badge-pri{background:#fef9c3;color:#854d0e}.badge-no{background:#f1f5f9;color:#94a3b8}
+.key-link{font-weight:700;color:#185fa5;font-size:11px}.rc-tag{font-size:10px;padding:2px 7px;border-radius:4px;display:inline-block;font-weight:600}
+.escalate-tag{font-size:10px;color:#991b1b;font-weight:600}.prob-text{font-size:11px;color:#475569;line-height:1.5}.sug-text{font-size:11px;color:#334155;line-height:1.5}
+</style></head><body>
+<div class="hdr"><div class="hdr-logo"><i class="ti ti-chart-bar"></i></div>
+  <h1>ZaloPay Jira Analyzer — Production Issue Dashboard</h1>
+  <span class="hdr-date">15/6/2026 &nbsp;·&nbsp; 4 tickets phân tích</span>
+</div>
+<div class="container">
+<div class="metrics">
+  <div class="metric"><div class="metric-label">Tổng tickets</div><div class="metric-val blue">4</div><div class="metric-sub">Production Issue batch</div></div>
+  <div class="metric"><div class="metric-label">SLA Breach</div><div class="metric-val red">0</div><div class="metric-sub">0% tỷ lệ vi phạm SLA</div></div>
+  <div class="metric"><div class="metric-label">Cần ưu tiên</div><div class="metric-val amber">0</div><div class="metric-sub">Breach hoặc Infrastructure/SW</div></div>
+  <div class="metric"><div class="metric-label">SLA OK</div><div class="metric-val green">4</div><div class="metric-sub">100% xử lý đúng hạn</div></div>
+</div>
+<div class="charts-grid">
+  <div class="chart-card"><div class="chart-title">Phân bổ SLA status</div>
+    <div class="legend">
+      <span><span class="legend-dot" style="background:#e24b4a"></span>SLA Breach 0 (0%)</span>
+      <span><span class="legend-dot" style="background:#639922"></span>SLA OK 4 (100%)</span>
+    </div>
+    <div style="position:relative;height:170px"><canvas id="c1"></canvas></div>
+  </div>
+  <div class="chart-card"><div class="chart-title">Root cause phân bổ</div>
+    <div style="position:relative;height:200px"><canvas id="c2"></canvas></div>
+  </div>
+  <div class="chart-card"><div class="chart-title">Loại vấn đề (Request Type)</div>
+    <div class="legend" id="leg3"></div>
+    <div style="position:relative;height:160px"><canvas id="c3"></canvas></div>
+  </div>
+  <div class="chart-card"><div class="chart-title">Tickets cần escalate theo team</div>
+    <div style="position:relative;height:200px"><canvas id="c4"></canvas></div>
+  </div>
+</div>
+<div class="filters-bar">
+  <label>Lọc SLA:</label>
+  <select id="fSLA" onchange="render()"><option value="ALL">Tất cả</option><option value="BREACH">Breach</option><option value="OK">OK</option></select>
+  <label>Root cause:</label>
+  <select id="fRC" onchange="render()"><option value="ALL">Tất cả</option><option value="User misuderstanding">User misuderstanding</option><option value="Human - Configuration">Human - Configuration</option><option value="Others">Others</option></select>
+  <label>Ưu tiên:</label>
+  <select id="fPri" onchange="render()"><option value="ALL">Tất cả</option><option value="1">Cần ưu tiên</option><option value="0">Bình thường</option></select>
+  <span class="ticket-count" id="cnt"></span>
+</div>
+<div class="table-wrap"><table>
+  <thead><tr><th>Issue Key</th><th>Loại vấn đề</th><th>Vấn đề khách hàng</th><th>Root Cause</th><th>SLA</th><th>Ưu tiên</th><th>Escalate đến</th><th>Gợi ý xử lý CS</th></tr></thead>
+  <tbody id="tbody"></tbody>
+</table></div></div>
+<script>
+const DATA=[{"key":"ISSUE-40991","request_type":"Account_ChangeInfo","root_cause":"User misuderstanding","sla_status":"OK","priority":false,"escalate":"","problem":"Dear team, - Mô tả lỗi: KH muốn thay đổi số điện thoại trên Zalopay, đang đến bước XMCV là chụp ảnh chân dung, KH bấm chụp ảnh thì bấm vào không được - Thời gian thực hiện: 8 Th06 2026 16:55 - UserID: 181209000005820 - Tên thiết bị: Oppo A9 - Phiên b","suggestion":"Hướng dẫn lại cho khách hàng về quy trình chụp ảnh XMCV, kiểm tra quyền truy cập camera và đảm bảo điều kiện ánh sáng rõ ràng. Không cần escalate vì lỗi thuộc nhóm hiểu nhầm của khách."},{"key":"ISSUE-40967","request_type":"Promotion campaign","root_cause":"Human - Configuration","sla_status":"OK","priority":false,"escalate":"Team Cấu hình Khuyến mãi","problem":"UserID: 231219004509837 TID: 260610002916110 Chương trình: 2748 - OAO_241014_995 - Mở Tài Khoản Thanh Toán MSB - Nhận Thưởng Đến 130.000đ Vấn đề, kh đã thực hiện nạp tiền thành công từ ngân hàng MSb vừa tạo nhưng không nhận được thưởng mốc 2 ct ==> N","suggestion":"Liên hệ Team Cấu hình Khuyến mãi để rà soát lại quy tắc và cấu hình chương trình 2748. Yêu cầu xác nhận lỗi cấu hình đã được sửa và đảm bảo khách hàng nhận đủ thưởng theo cam kết."},{"key":"ISSUE-40959","request_type":"Lending_paylater","root_cause":"User misuderstanding","sla_status":"OK","priority":false,"escalate":"","problem":"UID: 190724000003207 Họ và tên TRANG THUỴ THUY Số điện thoại 0397910793 CMND/CCCD 096198000028 ID Tài khoản 473805227510763520 Vấn đề: Hiện tại trên giao diện Tài khoản trả sau khách hàng đang hiển thị yêu cầu thanh toán dư nợ và hạn thanh toán còn 5","suggestion":"Giải thích lại cho khách hàng về quy tắc tính dư nợ theo kỳ và phân biệt rõ giữa giao dịch tháng cũ đã thanh toán với giao dịch mới phát sinh."},{"key":"ISSUE-40957","request_type":"Account_Login/Register","root_cause":"Others","sla_status":"OK","priority":false,"escalate":"Team Tài khoản & An toàn bảo mật","problem":"Dear team User đăng nhập quá số lần xác thực otp trong tháng. Khách hàng đang không muốn chờ qua tháng do cần thanh lý nhờ team reset limit cho khách hàng UID: 260328000503716 Cám ơn team","suggestion":"Xác minh thông tin UID 260328000503716, liên hệ team phụ trách tài khoản để reset giới hạn OTP ngoại lệ cho KH do tình huống khẩn cấp thanh lý."}];
+const RC_COLORS={"User misunderstanding":"#378add","User misuderstanding":"#378add","Human - Configuration":"#ef9f27","Infrastructure - Software":"#e24b4a","External Factors":"#1d9e75","Others":"#888780","User need more Information":"#7f77dd"};
+const TOTAL=4;
+function render(){
+  const sl=document.getElementById('fSLA').value,rc=document.getElementById('fRC').value,pr=document.getElementById('fPri').value;
+  const f=DATA.filter(t=>{
+    if(sl!=='ALL'&&t.sla_status!==sl)return false;
+    if(rc!=='ALL'&&t.root_cause!==rc)return false;
+    if(pr==='1'&&!t.priority)return false;
+    if(pr==='0'&&t.priority)return false;
+    return true;
+  });
+  document.getElementById('cnt').textContent=f.length+' / '+TOTAL+' tickets';
+  document.getElementById('tbody').innerHTML=f.map(t=>{
+    const c=RC_COLORS[t.root_cause]||'#aaa',bg=c+'22';
+    return `<tr class="${t.sla_status==='BREACH'?'breach':'ok'}">
+      <td><span class="key-link">${t.key}</span></td>
+      <td style="font-size:11px;color:#475569">${t.request_type}</td>
+      <td class="prob-text">${t.problem||'—'}</td>
+      <td><span class="rc-tag" style="background:${bg};color:${c}">${t.root_cause||'—'}</span></td>
+      <td><span class="badge ${t.sla_status==='BREACH'?'badge-breach':'badge-ok'}">${t.sla_status}</span></td>
+      <td><span class="badge ${t.priority?'badge-pri':'badge-no'}">${t.priority?'Ưu tiên':'—'}</span></td>
+      <td><span class="escalate-tag">${t.escalate||'—'}</span></td>
+      <td class="sug-text">${t.suggestion}</td>
+    </tr>`;
+  }).join('');
+}
+render();
+new Chart(document.getElementById('c1'),{type:'doughnut',data:{labels:['SLA Breach','SLA OK'],datasets:[{data:[0,4],backgroundColor:['#e24b4a','#639922'],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:d=>' '+d.label+': '+d.raw+' tickets'}}}}});
+new Chart(document.getElementById('c2'),{type:'bar',data:{labels:["User misuderstanding","Human - Configuration","Others"],datasets:[{data:[2,1,1],backgroundColor:["#378add","#888780","#ef9f27"],borderWidth:0,borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{stepSize:1,font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}});
+const rtL=["Account_ChangeInfo","Promotion campaign","Lending_paylater","Account_Login/Register"],rtD=[1,1,1,1],rtC=["#ef9f27","#378add","#1d9e75","#7f77dd"];
+document.getElementById('leg3').innerHTML=rtL.map((l,i)=>`<span><span class="legend-dot" style="background:${rtC[i]}"></span>${l} ${rtD[i]}</span>`).join('');
+new Chart(document.getElementById('c3'),{type:'doughnut',data:{labels:rtL,datasets:[{data:rtD,backgroundColor:rtC,borderWidth:0,hoverOffset:3}]},options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{display:false},tooltip:{callbacks:{label:d=>' '+d.label+': '+d.raw}}}}});
+new Chart(document.getElementById('c4'),{type:'bar',data:{labels:["Team Cấu hình Khuyến mãi","Team Tài khoản & An toàn bảo mật"],datasets:[{data:[1,1],backgroundColor:["#ef9f27","#e24b4a"],borderWidth:0,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},maxRotation:25},grid:{display:false}},y:{ticks:{stepSize:1,font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}}}}});
+</script></body></html>
