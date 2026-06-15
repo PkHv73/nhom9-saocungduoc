@@ -12,7 +12,7 @@ on:
 
 env:
   REGISTRY: vcr.vngcloud.vn
-  IMAGE: vcr.vngcloud.vn/112121-zalopay-cskh-agent
+  IMAGE: vcr.vngcloud.vn/112121-zalopay-cskh-agent/zalopay-cskh-agent
 
 jobs:
   build-and-push:
