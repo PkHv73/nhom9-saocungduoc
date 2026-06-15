@@ -38,8 +38,8 @@ def handler(payload: dict, context: RequestContext) -> dict:
         "error": result.error,
         "classification": result.classification.__dict__ if result.classification else None,
         "analysis": result.analysis.__dict__ if result.analysis else None,
-        "draft_response": result.draft_response,
         "final_response": result.final_response,
+        "needs_human_review": result.needs_human_review,
         "session_id": context.session_id,
     }
 

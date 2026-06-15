@@ -54,7 +54,8 @@ Cấu trúc JSON bắt buộc:
   "transaction_id": "string hoặc null",
   "phone_number": "string hoặc null",
   "amount": "string hoặc null",
-  "customer_request": "string mô tả yêu cầu của khách"
+  "customer_request": "string mô tả yêu cầu của khách",
+  "confidence": "high nếu ticket rõ ràng đủ thông tin, medium nếu thiếu một số chi tiết, low nếu ticket mơ hồ hoặc không đủ thông tin để phân loại chính xác"
 }"""
 
 AGENT2_SYSTEM = """Bạn là Agent Phân tích Nghiệp vụ của hệ thống ZaloPay.
@@ -114,6 +115,7 @@ class TicketClassification:
     phone_number: Optional[str] = None
     amount: Optional[str] = None
     customer_request: str = ""
+    confidence: str = "medium"  # high / medium / low
 
 
 @dataclass
@@ -132,6 +134,7 @@ class PipelineResult:
     final_response: str = ""
     success: bool = False
     error: Optional[str] = None
+    needs_human_review: bool = False  # True khi confidence=low → route sang người thật
 
 
 # ─── LỖI TÙY CHỈNH ───────────────────────────────────────────────────────────
@@ -162,20 +165,26 @@ def safe_parse_json(text: str) -> dict:
         raise AgentParseError(f"Không thể parse JSON: {e}\nNội dung nhận được:\n{text}") from e
 
 
-def call_claude(client: OpenAI, system: str, user_content: str) -> str:
-    """Gọi LLM API (OpenAI-compatible) và trả về text response."""
-    try:
-        response = client.chat.completions.create(
-            model=MODEL,
-            max_tokens=MAX_TOKENS,
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": user_content},
-            ],
-        )
-        return response.choices[0].message.content or ""
-    except Exception as e:
-        raise AgentCallError(f"Lỗi LLM API: {e}") from e
+def call_claude(client: OpenAI, system: str, user_content: str, retries: int = 1) -> str:
+    """Gọi LLM API (OpenAI-compatible) và trả về text response. Tự retry nếu lỗi."""
+    last_err = None
+    for attempt in range(retries + 1):
+        try:
+            response = client.chat.completions.create(
+                model=MODEL,
+                max_tokens=MAX_TOKENS,
+                messages=[
+                    {"role": "system", "content": system + " /no_think"},
+                    {"role": "user", "content": user_content},
+                ],
+                extra_body={"chat_template_kwargs": {"enable_thinking": False}},
+            )
+            return response.choices[0].message.content or ""
+        except Exception as e:
+            last_err = e
+            if attempt < retries:
+                log.warning("LLM call thất bại (lần %d/%d): %s — thử lại...", attempt + 1, retries + 1, e)
+    raise AgentCallError(f"Lỗi LLM API sau {retries + 1} lần thử: {last_err}") from last_err
 
 
 # ─── CÁC AGENT ────────────────────────────────────────────────────────────────
@@ -188,6 +197,9 @@ def agent1_classify(client: OpenAI, ticket: str) -> TicketClassification:
     log.debug("[Agent 1] Raw output:\n%s", raw)
 
     data = safe_parse_json(raw)
+    confidence = data.get("confidence", "medium").lower()
+    if confidence not in ("high", "medium", "low"):
+        confidence = "medium"
     result = TicketClassification(
         category=data.get("category", "UNKNOWN"),
         sub_category=data.get("sub_category", "UNKNOWN"),
@@ -196,8 +208,10 @@ def agent1_classify(client: OpenAI, ticket: str) -> TicketClassification:
         phone_number=data.get("phone_number"),
         amount=data.get("amount"),
         customer_request=data.get("customer_request", ""),
+        confidence=confidence,
     )
-    log.info("[Agent 1] ✓ category=%s | sub_category=%s", result.category, result.sub_category)
+    log.info("[Agent 1] ✓ category=%s | sub_category=%s | confidence=%s",
+             result.category, result.sub_category, result.confidence)
     return result
 
 
@@ -282,6 +296,11 @@ def run_pipeline(ticket: str, check_result: str = "") -> PipelineResult:
         # Bước 1
         result.classification = agent1_classify(client, ticket)
 
+        # Routing: ticket mơ hồ → flag human review, vẫn tiếp tục nhưng đánh dấu
+        if result.classification.confidence == "low":
+            log.warning("Confidence thấp — ticket cần được nhân viên xem lại sau khi AI xử lý.")
+            result.needs_human_review = True
+
         # Bước 2
         result.analysis = agent2_analyze(client, result.classification, check_result)
 
@@ -289,7 +308,7 @@ def run_pipeline(ticket: str, check_result: str = "") -> PipelineResult:
         result.final_response = agent0_respond(client, result.classification, result.analysis)
 
         result.success = True
-        log.info("Pipeline hoàn tất thành công.")
+        log.info("Pipeline hoàn tất thành công. needs_human_review=%s", result.needs_human_review)
 
     except (AgentParseError, AgentCallError) as e:
         log.error("Pipeline thất bại: %s", e)

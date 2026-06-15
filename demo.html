@@ -358,14 +358,29 @@
 
   function renderSingleResult(data) {
     const c = data.classification || {};
+    const confidenceColor = { high: '#166534', medium: '#92400e', low: '#991b1b' };
+    const confidenceLabel = { high: '✅ Độ tin cậy: Cao', medium: '⚠️ Độ tin cậy: Trung bình', low: '🔴 Độ tin cậy: Thấp' };
+    const conf = (c.confidence || 'medium').toLowerCase();
     document.getElementById('tags').innerHTML = [c.category, c.sub_category, c.merchant, c.phone_number, c.amount]
-      .filter(Boolean).map(v => `<span class="tag"><strong>${v}</strong></span>`).join('');
+      .filter(Boolean).map(v => `<span class="tag"><strong>${v}</strong></span>`).join('')
+      + `<span class="tag" style="color:${confidenceColor[conf]||'#666'};font-weight:700">${confidenceLabel[conf]||conf}</span>`;
     const a = data.analysis || {};
     document.getElementById('analysis').innerHTML = [
       a.root_cause ? `Nguyên nhân: ${a.root_cause}` : null,
       a.refund_allowed !== undefined ? (a.refund_allowed ? '✅ Được hoàn tiền' : '❌ Không hoàn tiền') : null,
       a.escalate ? '⚠️ Cần escalate' : null
     ].filter(Boolean).map(v => `<span class="tag">${v}</span>`).join('');
+
+    // Human review warning
+    const reviewEl = document.getElementById('humanReviewBanner');
+    if (reviewEl) reviewEl.remove();
+    if (data.needs_human_review) {
+      const banner = document.createElement('div');
+      banner.id = 'humanReviewBanner';
+      banner.style.cssText = 'background:#fff3cd;border:1px solid #ffc107;border-left:4px solid #e65100;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#7c4700;';
+      banner.innerHTML = '⚠️ <strong>Cần xem xét thủ công:</strong> Ticket này có nội dung mơ hồ, AI xử lý ở mức tin cậy thấp. Đề nghị nhân viên CS kiểm tra lại phản hồi trước khi gửi khách hàng.';
+      document.getElementById('resultCard').insertBefore(banner, document.getElementById('resultCard').firstChild.nextSibling);
+    }
     document.getElementById('finalResponse').textContent = data.final_response || '(Không có phản hồi)';
   }
 
