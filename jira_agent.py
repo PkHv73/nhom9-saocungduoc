@@ -2,7 +2,7 @@
 ZaloPay Jira Ticket Analyzer
 =============================
 Agent phân tích ticket Jira từ file Excel (.xlsx) hoặc CSV export.
-v2: Xử lý song song với ThreadPoolExecutor — nhanh hơn 3-5x.
+v3: Batch mode — gửi tất cả ticket trong 1 lần gọi LLM duy nhất.
 
 Sử dụng:
     python jira_agent.py --file tickets.xlsx --limit 10
@@ -18,7 +18,6 @@ import argparse
 import re
 import sys
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from openai import OpenAI
 from dotenv import load_dotenv
 
@@ -27,11 +26,11 @@ load_dotenv()
 # ─── CẤU HÌNH ─────────────────────────────────────────────────────────────────
 
 MODEL        = os.getenv("LLM_MODEL", "qwen/qwen3-5-27b")
-MAX_TOKENS   = int(os.getenv("MAX_TOKENS", "1024"))
+MAX_TOKENS   = int(os.getenv("MAX_TOKENS", "2048"))  # Tăng để chứa nhiều ticket
 LOG_LEVEL    = os.getenv("LOG_LEVEL", "INFO").upper()
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://maas-llm-aiplatform-hcm.api.vngcloud.vn/v1")
 LLM_API_KEY  = os.getenv("LLM_API_KEY", "")
-MAX_WORKERS  = int(os.getenv("MAX_WORKERS", "4"))  # Số ticket xử lý song song
+BATCH_SIZE   = int(os.getenv("BATCH_SIZE", "5"))  # Số ticket mỗi batch
 
 logging.basicConfig(
     level=getattr(logging, LOG_LEVEL, logging.INFO),
@@ -42,14 +41,18 @@ log = logging.getLogger("zalopay.jira")
 
 # ─── SYSTEM PROMPT ────────────────────────────────────────────────────────────
 
-JIRA_AGENT_SYSTEM = """Bạn là chuyên gia phân tích ticket Jira ZaloPay. Trả về JSON duy nhất, KHÔNG giải thích thêm:
+JIRA_AGENT_SYSTEM = """Bạn là chuyên gia phân tích ticket Jira ZaloPay.
+Nhận vào danh sách nhiều ticket, trả về JSON array duy nhất, KHÔNG giải thích thêm:
 
-{
-  "suggestion": "gợi ý xử lý cụ thể cho CS bằng tiếng Việt",
-  "sla_status": "OK | BREACH | AT_RISK",
-  "priority_action": true/false,
-  "escalate_to": "team cần escalate hoặc để trống"
-}
+[
+  {
+    "key": "ISSUE-XXXXX",
+    "suggestion": "gợi ý xử lý cụ thể cho CS bằng tiếng Việt",
+    "sla_status": "OK | BREACH | AT_RISK",
+    "priority_action": true/false,
+    "escalate_to": "team cần escalate hoặc để trống"
+  }
+]
 
 Quy tắc:
 - "Human - Configuration" → kiểm tra cấu hình, escalate team cấu hình
@@ -62,7 +65,7 @@ Quy tắc:
 sla_status: dựa vào trường "Break SLA" (Yes → BREACH, No → OK)
 priority_action = true khi BREACH hoặc root cause là Infrastructure/Software
 
-Chỉ trả về JSON, không thêm text ngoài."""
+Chỉ trả về JSON array, không thêm text ngoài."""
 
 # Các trường quan trọng — hỗ trợ cả tên cột Excel và CSV
 IMPORTANT_FIELDS = [
@@ -229,44 +232,47 @@ def get_ticket_type(cells: dict) -> str:
 
 # ─── PIPELINE CHÍNH ───────────────────────────────────────────────────────────
 
-def analyze_ticket(client: OpenAI, cells: dict) -> dict:
-    """Phân tích một ticket đơn lẻ."""
-    ticket_text = format_ticket_text(cells)
-    issue_key = get_ticket_key(cells)
+def analyze_batch(client: OpenAI, batch_rows: list[dict]) -> list[dict]:
+    """Gửi nhiều ticket trong 1 lần gọi LLM, nhận về array JSON."""
+    # Build prompt với tất cả ticket trong batch
+    parts = []
+    for cells in batch_rows:
+        key = get_ticket_key(cells)
+        text = format_ticket_text(cells)
+        parts.append(f"=== TICKET: {key} ===\n{text}")
 
-    log.info("Đang phân tích: %s", issue_key)
-    raw = call_llm(client, f"Phân tích ticket sau:\n\n{ticket_text}")
-    log.debug("Raw output for %s:\n%s", issue_key, raw[:300])
+    prompt = "Phân tích tất cả các ticket sau và trả về JSON array:\n\n" + "\n\n".join(parts)
 
-    result = safe_parse_json(raw)
-    result["key"] = issue_key
-    result["type"] = get_ticket_type(cells)
-    return result
+    log.info("Gửi batch %d tickets cho LLM...", len(batch_rows))
+    raw = call_llm(client, prompt)
+    log.debug("Raw batch output:\n%s", raw[:500])
 
-
-def _process_row(args) -> tuple[int, dict]:
-    """Worker function cho ThreadPoolExecutor."""
-    client, i, cells, total = args
-    issue_key = get_ticket_key(cells)
+    # Parse array JSON
+    cleaned = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL)
+    cleaned = re.sub(r"```(?:json)?|```", "", cleaned).strip()
+    match = re.search(r"(\[[\s\S]*\])", cleaned)
+    if match:
+        cleaned = match.group(1)
     try:
-        result = analyze_ticket(client, cells)
-        log.info("✅ %s (%d/%d)", issue_key, i + 1, total)
-        return i, result
-    except Exception as e:
-        log.error("❌ %s: %s", issue_key, e)
-        return i, {
-            "key": issue_key,
-            "type": get_ticket_type(cells),
-            "suggestion": f"Lỗi phân tích: {str(e)[:200]}",
-            "sla_status": "OK",
-            "priority_action": False,
-            "escalate_to": "",
-            "error": str(e)[:200],
-        }
+        results = json.loads(cleaned)
+        if not isinstance(results, list):
+            results = [results]
+        return results
+    except json.JSONDecodeError:
+        # Fallback: nếu parse array thất bại, thử parse object đơn
+        log.warning("Không parse được array, thử parse từng object...")
+        objects = re.findall(r'\{[^{}]*\}', cleaned)
+        results = []
+        for obj in objects:
+            try:
+                results.append(json.loads(obj))
+            except Exception:
+                pass
+        return results
 
 
 def analyze_from_file(file_path: str, limit: int = 10) -> dict:
-    """Đọc file và phân tích các ticket SONG SONG với ThreadPoolExecutor."""
+    """Đọc file và phân tích tất cả ticket trong batch calls."""
     if not LLM_API_KEY:
         raise RuntimeError("Thiếu biến môi trường LLM_API_KEY.")
 
@@ -274,19 +280,73 @@ def analyze_from_file(file_path: str, limit: int = 10) -> dict:
 
     log.info("Đọc file: %s (tối đa %d tickets)", file_path, limit)
     rows = read_file_rows(file_path, limit=limit)
-    log.info("Đọc xong — %d rows, bắt đầu xử lý song song (max_workers=%d)", len(rows), MAX_WORKERS)
+    log.info("Đọc xong — %d rows, batch_size=%d", len(rows), BATCH_SIZE)
 
-    tickets = [None] * len(rows)
-    tasks = [(client, i, cells, len(rows)) for i, cells in enumerate(rows)]
+    # Tạo map key → type để merge kết quả
+    key_type_map = {get_ticket_key(r): get_ticket_type(r) for r in rows}
 
-    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        futures = {executor.submit(_process_row, task): task[1] for task in tasks}
-        for future in as_completed(futures):
-            i, result = future.result()
-            tickets[i] = result
+    all_results = []
 
-    log.info("Hoàn tất — %d tickets", len(tickets))
-    return {"tickets": tickets}
+    # Chia rows thành các batch nhỏ
+    for batch_start in range(0, len(rows), BATCH_SIZE):
+        batch = rows[batch_start:batch_start + BATCH_SIZE]
+        batch_keys = [get_ticket_key(r) for r in batch]
+        log.info("Xử lý batch %d-%d: %s", batch_start + 1, batch_start + len(batch), batch_keys)
+
+        try:
+            batch_results = analyze_batch(client, batch)
+
+            # Merge kết quả — đảm bảo mỗi ticket có đủ trường
+            result_map = {r.get("key", ""): r for r in batch_results}
+            for cells in batch:
+                key = get_ticket_key(cells)
+                if key in result_map:
+                    r = result_map[key]
+                else:
+                    # LLM không trả về key khớp — lấy theo thứ tự
+                    idx = [get_ticket_key(c) for c in batch].index(key)
+                    r = batch_results[idx] if idx < len(batch_results) else {}
+
+                all_results.append({
+                    "key": key,
+                    "type": key_type_map.get(key, ""),
+                    "suggestion": r.get("suggestion", "Không có gợi ý"),
+                    "sla_status": r.get("sla_status", "OK"),
+                    "priority_action": bool(r.get("priority_action", False)),
+                    "escalate_to": r.get("escalate_to", ""),
+                })
+            log.info("✅ Batch hoàn tất: %d/%d tickets", len(all_results), len(rows))
+
+        except Exception as e:
+            log.error("❌ Batch thất bại: %s — fallback từng ticket", e)
+            # Fallback: xử lý từng ticket riêng nếu batch lỗi
+            for cells in batch:
+                key = get_ticket_key(cells)
+                try:
+                    text = format_ticket_text(cells)
+                    raw = call_llm(client, f"Phân tích ticket sau:\n\n{text}")
+                    r = safe_parse_json(raw)
+                    all_results.append({
+                        "key": key,
+                        "type": key_type_map.get(key, ""),
+                        "suggestion": r.get("suggestion", ""),
+                        "sla_status": r.get("sla_status", "OK"),
+                        "priority_action": bool(r.get("priority_action", False)),
+                        "escalate_to": r.get("escalate_to", ""),
+                    })
+                except Exception as e2:
+                    all_results.append({
+                        "key": key,
+                        "type": key_type_map.get(key, ""),
+                        "suggestion": f"Lỗi: {str(e2)[:200]}",
+                        "sla_status": "OK",
+                        "priority_action": False,
+                        "escalate_to": "",
+                        "error": str(e2)[:200],
+                    })
+
+    log.info("Hoàn tất — %d tickets", len(all_results))
+    return {"tickets": all_results}
 
 
 # Alias để tương thích ngược với jira_main.py
@@ -302,6 +362,16 @@ def analyze_jira(data: str) -> dict:
     client = OpenAI(api_key=LLM_API_KEY, base_url=LLM_BASE_URL)
     log.info("Phân tích text (%d ký tự)...", len(data))
     raw = call_llm(client, f"Phân tích ticket sau:\n\n{data}")
+    # Thử parse array trước, fallback object đơn
+    cleaned = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL)
+    cleaned = re.sub(r"```(?:json)?|```", "", cleaned).strip()
+    arr_match = re.search(r"(\[[\s\S]*\])", cleaned)
+    if arr_match:
+        try:
+            results = json.loads(arr_match.group(1))
+            return {"tickets": results if isinstance(results, list) else [results]}
+        except Exception:
+            pass
     result = safe_parse_json(raw)
     if "tickets" not in result:
         result = {"tickets": [result]}

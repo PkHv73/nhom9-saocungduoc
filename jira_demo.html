@@ -191,28 +191,74 @@
     document.getElementById('analyzeBtn').disabled = false;
   }
 
-  function toBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result.split(',')[1]);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+  const IMPORTANT_FIELDS = [
+    "Issue key","Issue Key","Key","Summary",
+    "Customer Request Type","Custom field (Customer Request Type)",
+    "Description","Mô tả",
+    "Break SLA","Custom field (Break SLA)","Custom field (Reason for SLA Breach)",
+    "Root Cause Type","Custom field (Root Cause Type)","Custom field (Root Cause Description)",
+    "Custom field (Zalo Pay Resolution)","Tóm tắt HXL","Custom field (Note)",
+    "Status","Priority","Created","Resolved","Custom field (Resolved Date)"
+  ];
+  const BATCH_SIZE = 5;
+
+  function getKey(r) {
+    return r['Issue key'] || r['Issue Key'] || r['Key'] || '';
+  }
+  function getType(r) {
+    return r['Custom field (Customer Request Type)'] || r['Customer Request Type'] || r['Loại vấn đề'] || '';
+  }
+  function formatTicketText(r) {
+    const lines = [], seen = new Set();
+    for (const f of IMPORTANT_FIELDS) {
+      let v = (r[f] || '').toString().trim();
+      if (!v || v === 'None' || v === 'nan') continue;
+      const k = f.replace('Custom field (','').replace(')','').trim() + '|' + v.slice(0,50);
+      if (seen.has(k)) continue;
+      seen.add(k);
+      if (f.includes('Description') && v.length > 600) v = v.slice(0,600) + '...';
+      lines.push(`${f}: ${v}`);
+    }
+    return lines.join('\n');
   }
 
-  function updateProgress(current, total, key) {
+  function updateProgress(current, total, key, done) {
     const pct = Math.round((current / total) * 100);
     document.getElementById('progressBar').style.display = 'block';
     document.getElementById('progressFill').style.width = pct + '%';
-    document.getElementById('progressLabel').textContent = 'Đang phân tích: ' + key;
+    document.getElementById('progressLabel').textContent = done
+      ? `✅ Hoàn tất ${key}`
+      : `⏳ Đang phân tích: ${key}`;
     document.getElementById('progressCount').textContent = current + ' / ' + total + ' tickets';
-    document.getElementById('spinnerText').textContent = 'Đang xử lý từng ticket...';
+    document.getElementById('spinnerText').textContent = done
+      ? `Xong ${current}/${total} tickets`
+      : `Đang xử lý batch (${current}/${total})...`;
   }
 
   function resetProgress() {
     document.getElementById('progressBar').style.display = 'none';
     document.getElementById('progressFill').style.width = '0%';
     document.getElementById('spinnerText').textContent = 'Đang phân tích tickets với AI...';
+  }
+
+  async function readRows(file, limit) {
+    const isCsv = file.name.toLowerCase().endsWith('.csv');
+    let wb;
+    if (isCsv) {
+      const text = await new Promise((res, rej) => {
+        const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej;
+        r.readAsText(file, 'UTF-8');
+      });
+      wb = XLSX.read(text, { type: 'string' });
+    } else {
+      const b64 = await new Promise((res, rej) => {
+        const r = new FileReader(); r.onload = () => res(r.result.split(',')[1]); r.onerror = rej;
+        r.readAsDataURL(file);
+      });
+      wb = XLSX.read(b64, { type: 'base64' });
+    }
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    return XLSX.utils.sheet_to_json(ws, { defval: '' }).slice(0, limit);
   }
 
   async function analyze() {
@@ -225,64 +271,69 @@
     resetProgress();
 
     try {
-      const b64 = await toBase64(selectedFile);
       const limit = parseInt(document.getElementById('limitSelect').value);
-
-      // Đọc danh sách issue keys từ Excel/CSV để hiển thị tiến độ
-      const isCsv = selectedFile.name.toLowerCase().endsWith('.csv');
-      let wb;
-      if (isCsv) {
-        // Đọc CSV as UTF-8 text để tránh lỗi font Vietnamese
-        const csvText = await new Promise((resolve, reject) => {
-          const r2 = new FileReader();
-          r2.onload = () => resolve(r2.result);
-          r2.onerror = reject;
-          r2.readAsText(selectedFile, 'UTF-8');
-        });
-        wb = XLSX.read(csvText, { type: 'string' });
-      } else {
-        wb = XLSX.read(b64, { type: 'base64' });
-      }
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
-      const keys = rows.slice(0, limit).map((r, i) => r['Issue key'] || r['Issue Key'] || r['Key'] || ('ROW-' + (i+1)));
+      const rows = await readRows(selectedFile, limit);
 
       // Thu thập metadata cho dashboard export
       ticketMetaMap = {};
-      rows.slice(0, limit).forEach(r => {
-        const key = r['Issue key'] || r['Issue Key'] || r['Key'] || '';
+      rows.forEach(r => {
+        const key = getKey(r);
         if (key) ticketMetaMap[key] = {
           root_cause: r['Custom field (Root Cause Type)'] || r['Root Cause Type'] || '',
-          problem: (r['Description'] || r['Summary'] || '').replace(/_x000D_/g,'').replace(/\s+/g,' ').trim().slice(0, 250),
+          problem: (r['Description'] || r['Summary'] || '').replace(/_x000D_/g,'').replace(/\s+/g,' ').trim().slice(0,250),
         };
       });
 
-      // Giả lập tiến độ trong khi chờ server (server xử lý batch)
-      let fakeIdx = 0;
-      const fakeInterval = setInterval(() => {
-        if (fakeIdx < keys.length) {
-          updateProgress(fakeIdx + 1, keys.length, keys[fakeIdx]);
-          fakeIdx++;
-        } else {
-          clearInterval(fakeInterval);
-        }
-      }, Math.max(800, 2000 / keys.length));
+      const allTickets = [];
+      let processed = 0;
 
-      const res = await fetch(ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ excel_base64: b64, limit })
-      });
-      clearInterval(fakeInterval);
+      // Gửi từng batch, cập nhật tiến độ THỰC sau mỗi batch
+      for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+        const batch = rows.slice(i, i + BATCH_SIZE);
+        const batchKeys = batch.map(getKey);
+        const firstKey = batchKeys[0];
 
-      // Hoàn tất progress bar
-      if (keys.length > 0) updateProgress(keys.length, keys.length, keys[keys.length-1]);
-      await new Promise(r => setTimeout(r, 400));
+        updateProgress(processed, rows.length, firstKey, false);
 
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error || 'Lỗi không xác định');
-      lastResults = data.tickets || [];
-      renderResult(data);
+        // Format batch thành text gửi lên server
+        const batchText = batch.map(r =>
+          `=== TICKET: ${getKey(r)} ===\n${formatTicketText(r)}`
+        ).join('\n\n');
+
+        const res = await fetch(ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: batchText })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Lỗi server');
+
+        // Merge kết quả — map key → result từ server, fallback theo thứ tự
+        const serverTickets = data.tickets || [];
+        const resultMap = {};
+        serverTickets.forEach(t => { if (t.key) resultMap[t.key] = t; });
+
+        batch.forEach((r, idx) => {
+          const key = getKey(r);
+          const t = resultMap[key] || serverTickets[idx] || {};
+          allTickets.push({
+            key,
+            type: getType(r),
+            suggestion: t.suggestion || '—',
+            sla_status: t.sla_status || 'OK',
+            priority_action: !!t.priority_action,
+            escalate_to: t.escalate_to || '',
+          });
+        });
+
+        processed += batch.length;
+        updateProgress(processed, rows.length, batchKeys[batchKeys.length-1], true);
+        await new Promise(r => setTimeout(r, 200)); // nhỏ pause để UI cập nhật
+      }
+
+      lastResults = allTickets;
+      renderResult({ tickets: allTickets });
+
     } catch (e) {
       document.getElementById('errorBox').textContent = '❌ ' + e.message;
       document.getElementById('errorBox').style.display = 'block';
