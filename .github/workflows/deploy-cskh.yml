@@ -8,6 +8,7 @@ on:
       - main.py
       - requirements.txt
       - Dockerfile
+  workflow_dispatch:
 
 env:
   REGISTRY: vcr.vngcloud.vn
