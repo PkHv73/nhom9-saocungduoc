@@ -4,206 +4,446 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZaloPay AI Support</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      --blue: #0068ff;
+      --blue-dark: #0050cc;
+      --blue-light: #eff6ff;
+      --blue-border: #bdd7ff;
+      --navy: #0d2244;
+      --text: #1a1f36;
+      --text-2: #4f566b;
+      --text-3: #8792a2;
+      --border: #e3e8ef;
+      --bg: #f5f7fa;
+      --white: #ffffff;
+      --green: #0d9f6e;
+      --green-bg: #e6f9f2;
+      --red: #c0392b;
+      --red-bg: #fdecea;
+      --amber: #b45309;
+      --amber-bg: #fffbeb;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── HEADER ── */
     header {
-      background: #0068ff;
-      color: white;
-      padding: 14px 24px;
+      background: var(--navy);
+      padding: 0 24px;
+      height: 56px;
       display: flex;
       align-items: center;
       gap: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
-    header h1 { font-size: 18px; font-weight: 600; }
-    header span { font-size: 12px; opacity: 0.75; margin-left: auto; }
+    .header-logo {
+      width: 32px; height: 32px;
+      background: var(--blue);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 800; color: white;
+      letter-spacing: -1px; flex-shrink: 0;
+    }
+    .header-title { font-size: 15px; font-weight: 700; color: white; }
+    .header-sep { width: 1px; height: 18px; background: rgba(255,255,255,0.2); }
+    .header-sub { font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 400; }
+    .header-pill {
+      margin-left: auto;
+      background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.7);
+      font-size: 11px; font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .header-pill::before { content: "●"; color: #0d9f6e; margin-right: 5px; font-size: 9px; }
 
-    .container { max-width: 860px; margin: 28px auto; padding: 0 16px; }
+    /* ── LAYOUT ── */
+    .container { max-width: 900px; margin: 0 auto; padding: 28px 20px 48px; }
 
+    /* ── CARD ── */
     .card {
-      background: white;
-      border-radius: 12px;
-      padding: 22px 24px;
-      margin-bottom: 18px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      background: var(--white);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .card-body { padding: 20px 22px; }
+    .card-header {
+      padding: 14px 22px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
     }
     .card-title {
-      font-size: 14px; font-weight: 700; color: #1e3a5f;
-      margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 700;
+      color: var(--text);
+      display: flex; align-items: center; gap: 7px;
+    }
+    .card-title-icon {
+      width: 22px; height: 22px;
+      border-radius: 6px;
+      background: var(--blue-light);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
     }
 
-    /* tabs */
-    .tabs { display: flex; gap: 4px; margin-bottom: 18px; background: #f0f2f5; border-radius: 10px; padding: 4px; }
-    .tab {
-      flex: 1; padding: 8px 0; border: none; background: transparent;
-      border-radius: 8px; font-size: 13px; font-weight: 600; color: #666;
-      cursor: pointer; transition: all 0.15s;
+    /* ── SAMPLES ── */
+    .samples-grid { display: flex; flex-direction: column; gap: 8px; }
+    .sample-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 13px; font-family: inherit;
+      color: var(--text-2); cursor: pointer;
+      text-align: left;
+      display: flex; align-items: center; gap: 10px;
+      transition: all 0.15s;
+      font-weight: 500;
     }
-    .tab.active { background: white; color: #0068ff; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+    .sample-btn:hover {
+      background: var(--blue-light);
+      border-color: var(--blue-border);
+      color: var(--blue);
+    }
+    .sample-btn .s-icon {
+      width: 28px; height: 28px; flex-shrink: 0;
+      border-radius: 7px;
+      background: white;
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+    }
+
+    /* ── TABS ── */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab {
+      flex: 1; padding: 13px 0;
+      border: none; background: transparent;
+      font-size: 13px; font-weight: 600;
+      color: var(--text-3); cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .tab.active {
+      color: var(--blue);
+      border-bottom-color: var(--blue);
+      background: transparent;
+    }
+    .tab:hover:not(.active) { color: var(--text-2); }
 
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
-    label { display: block; font-size: 13px; color: #555; margin-bottom: 6px; font-weight: 500; }
-    textarea {
-      width: 100%; border: 1px solid #dde3ec; border-radius: 8px;
-      padding: 10px 12px; font-size: 13px; font-family: inherit;
-      resize: vertical; transition: border-color 0.2s;
+    /* ── FORM ── */
+    .form-group { margin-bottom: 14px; }
+    .form-label {
+      display: block;
+      font-size: 12px; font-weight: 600;
+      color: var(--text-2);
+      margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px;
     }
-    textarea:focus { outline: none; border-color: #0068ff; }
+    .form-label .optional {
+      font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--text-3);
+    }
+    textarea {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 13px;
+      font-size: 13.5px; font-family: inherit;
+      color: var(--text); line-height: 1.6;
+      resize: vertical; transition: border-color 0.2s, box-shadow 0.2s;
+      background: var(--white);
+    }
+    textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,104,255,0.1); }
     textarea { min-height: 90px; }
 
+    select {
+      padding: 8px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px; font-family: inherit;
+      color: var(--text); background: white;
+      cursor: pointer;
+    }
+    select:focus { outline: none; border-color: var(--blue); }
+
+    /* ── BUTTONS ── */
     .btn {
-      background: #0068ff; color: white; border: none;
-      border-radius: 8px; padding: 11px 24px; font-size: 14px;
-      font-weight: 600; cursor: pointer; width: 100%; margin-top: 14px;
-      transition: background 0.2s;
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      background: var(--blue); color: white; border: none;
+      border-radius: var(--radius-sm); padding: 11px 20px;
+      font-size: 13.5px; font-weight: 600; font-family: inherit;
+      cursor: pointer; transition: all 0.18s;
+      white-space: nowrap;
     }
-    .btn:hover:not(:disabled) { background: #0056d6; }
-    .btn:disabled { background: #b0bec5; cursor: not-allowed; }
-    .btn-green { background: #16a34a; }
-    .btn-green:hover:not(:disabled) { background: #15803d; }
-    .btn-sm {
-      width: auto; padding: 7px 16px; font-size: 13px; margin-top: 0;
-      display: inline-block;
+    .btn:hover:not(:disabled) { background: var(--blue-dark); box-shadow: 0 2px 8px rgba(0,104,255,0.3); }
+    .btn:active:not(:disabled) { transform: translateY(1px); }
+    .btn:disabled { background: #c7d2de; color: #8fa3b4; cursor: not-allowed; }
+    .btn-full { width: 100%; }
+    .btn-sm { padding: 7px 14px; font-size: 12px; }
+    .btn-green { background: var(--green); }
+    .btn-green:hover:not(:disabled) { background: #0a8a5f; box-shadow: 0 2px 8px rgba(13,159,110,0.3); }
+    .btn-outline {
+      background: transparent; color: var(--blue);
+      border: 1.5px solid var(--blue-border);
     }
+    .btn-outline:hover:not(:disabled) { background: var(--blue-light); box-shadow: none; }
 
-    /* upload zone */
+    /* ── UPLOAD ZONE ── */
     .upload-zone {
-      border: 2px dashed #c7d7f0; border-radius: 10px;
-      padding: 24px; text-align: center; cursor: pointer;
-      transition: all 0.2s; color: #64748b; font-size: 13px;
-      background: #f8faff;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 28px 20px; text-align: center; cursor: pointer;
+      transition: all 0.2s; color: var(--text-3);
+      background: var(--bg);
     }
-    .upload-zone:hover, .upload-zone.dragover { border-color: #0068ff; background: #eff6ff; }
-    .upload-zone .upload-icon { font-size: 28px; margin-bottom: 8px; }
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--blue); background: var(--blue-light); color: var(--blue);
+    }
+    .upload-zone .upload-icon { font-size: 32px; margin-bottom: 10px; }
+    .upload-zone .upload-hint { font-size: 13px; font-weight: 500; }
+    .upload-zone .upload-sub { font-size: 11px; color: var(--text-3); margin-top: 4px; }
     .upload-zone input { display: none; }
-    .file-selected { margin-top: 10px; color: #0068ff; font-weight: 600; font-size: 13px; }
+    .file-selected { margin-top: 8px; color: var(--green); font-weight: 600; font-size: 12px; }
 
-    /* progress */
-    .progress-wrap { margin: 14px 0; display: none; }
-    .progress-bar { height: 8px; background: #e2e8f0; border-radius: 99px; overflow: hidden; }
-    .progress-fill { height: 100%; background: #0068ff; border-radius: 99px; transition: width 0.3s; width: 0%; }
-    .progress-label { font-size: 12px; color: #64748b; margin-top: 6px; display: flex; justify-content: space-between; }
-
-    .spinner-inline {
-      display: inline-block; width: 14px; height: 14px;
-      border: 2px solid #d0e4ff; border-top-color: #0068ff;
-      border-radius: 50%; animation: spin 0.8s linear infinite;
-      vertical-align: middle; margin-right: 6px;
+    /* ── PROGRESS ── */
+    .progress-wrap { margin: 16px 0; }
+    .progress-track {
+      height: 6px; background: var(--border); border-radius: 99px; overflow: hidden;
     }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, var(--blue), #38a0ff);
+      border-radius: 99px; transition: width 0.4s ease; width: 0%;
+    }
+    .progress-meta {
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: var(--text-3); margin-top: 6px;
+    }
+
+    /* ── SPINNER ── */
     @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      display: inline-block; width: 13px; height: 13px;
+      border: 2px solid var(--blue-border); border-top-color: var(--blue);
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+      vertical-align: middle; flex-shrink: 0;
+    }
+    .processing-state {
+      display: flex; align-items: center; gap: 10px;
+      padding: 18px 22px; color: var(--text-2); font-size: 13px; font-weight: 500;
+    }
+    .processing-dots::after {
+      content: ''; animation: dots 1.4s steps(3, end) infinite;
+    }
+    @keyframes dots {
+      0%   { content: '.'; }
+      33%  { content: '..'; }
+      66%  { content: '...'; }
+      100% { content: ''; }
+    }
 
-    /* result single */
-    .result-label { font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
-    .tag { background: #eff6ff; border-radius: 20px; padding: 3px 11px; font-size: 12px; color: #1e3a5f; }
+    /* ── RESULT SINGLE ── */
+    .result-section { margin-bottom: 18px; }
+    .result-section:last-child { margin-bottom: 0; }
+    .result-section-label {
+      font-size: 10px; font-weight: 700;
+      color: var(--text-3); text-transform: uppercase; letter-spacing: 0.6px;
+      margin-bottom: 8px;
+    }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag {
+      background: var(--blue-light);
+      border: 1px solid var(--blue-border);
+      border-radius: 20px; padding: 3px 11px;
+      font-size: 12px; color: var(--blue); font-weight: 600;
+    }
+    .tag-neutral { background: #f1f3f5; border-color: var(--border); color: var(--text-2); }
+    .tag-green { background: var(--green-bg); border-color: #a7f3d0; color: var(--green); }
+    .tag-red { background: var(--red-bg); border-color: #fca5a5; color: var(--red); }
+    .tag-amber { background: var(--amber-bg); border-color: #fcd34d; color: var(--amber); }
+
     .response-box {
-      background: #f8faff; border: 1px solid #d0e4ff; border-left: 4px solid #0068ff;
-      border-radius: 8px; padding: 14px 16px; font-size: 13px; line-height: 1.75;
-      color: #222; white-space: pre-wrap;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-left: 3px solid var(--blue);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      font-size: 13.5px; line-height: 1.8;
+      color: var(--text); white-space: pre-wrap;
     }
 
-    /* batch results table */
-    .results-header {
-      display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;
+    .alert-banner {
+      display: flex; align-items: flex-start; gap: 10px;
+      background: var(--amber-bg);
+      border: 1px solid #fcd34d;
+      border-radius: var(--radius-sm);
+      padding: 11px 14px; margin-bottom: 16px;
+      font-size: 12.5px; color: var(--amber);
     }
-    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-    .badge-ok { background: #dcfce7; color: #166534; }
-    .badge-err { background: #fee2e2; color: #991b1b; }
+    .alert-banner strong { font-weight: 700; }
+
+    /* ── STATS ── */
+    .stat-row { display: flex; gap: 10px; margin-bottom: 18px; }
+    .stat {
+      flex: 1; background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 14px 16px; text-align: center;
+    }
+    .stat-val { font-size: 28px; font-weight: 700; line-height: 1; }
+    .stat-label { font-size: 11px; color: var(--text-3); margin-top: 4px; font-weight: 500; }
+
+    /* ── TABLE ── */
+    .table-wrap { overflow-x: auto; border-radius: var(--radius-sm); border: 1px solid var(--border); }
     .batch-table { width: 100%; border-collapse: collapse; font-size: 12px; }
     .batch-table th {
-      background: #1e3a5f; color: white; padding: 9px 12px;
-      text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.3px;
+      background: #f8f9fb; color: var(--text-2);
+      padding: 10px 13px; text-align: left;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.3px; border-bottom: 1px solid var(--border);
+      white-space: nowrap;
     }
     .batch-table td {
-      padding: 9px 12px; border-bottom: 1px solid #f1f5f9;
+      padding: 10px 13px; border-bottom: 1px solid #f1f3f6;
       vertical-align: top; line-height: 1.5;
     }
     .batch-table tr:last-child td { border-bottom: none; }
-    .batch-table tr:nth-child(even) td { background: #f8faff; }
-    .key-link { font-weight: 700; color: #0068ff; font-size: 11px; }
-    .response-preview {
-      max-height: 80px; overflow: hidden; position: relative; color: #334155; font-size: 11px;
+    .batch-table tr:hover td { background: #fafbff; }
+    .key-chip {
+      font-weight: 700; color: var(--blue); font-size: 11px;
+      background: var(--blue-light); padding: 2px 8px; border-radius: 5px;
+      white-space: nowrap;
     }
+    .badge {
+      display: inline-block; padding: 2px 9px; border-radius: 20px;
+      font-size: 10px; font-weight: 700; white-space: nowrap;
+    }
+    .badge-ok { background: var(--green-bg); color: var(--green); }
+    .badge-err { background: var(--red-bg); color: var(--red); }
+
+    .response-preview { max-height: 72px; overflow: hidden; color: var(--text-2); font-size: 11.5px; line-height: 1.55; }
     .response-preview.expanded { max-height: none; }
     .expand-btn {
-      background: none; border: none; color: #0068ff; font-size: 11px;
-      cursor: pointer; padding: 2px 0; font-weight: 600;
+      background: none; border: none; color: var(--blue); font-size: 11px;
+      cursor: pointer; padding: 2px 0; font-weight: 600; font-family: inherit;
     }
 
+    /* ── ERROR ── */
     .error-box {
-      background: #fff0f0; border: 1px solid #fecaca;
-      border-radius: 8px; padding: 12px 16px; color: #991b1b; font-size: 13px;
+      display: flex; align-items: flex-start; gap: 10px;
+      background: var(--red-bg); border: 1px solid #fca5a5;
+      border-radius: var(--radius-sm); padding: 12px 16px;
+      color: var(--red); font-size: 13px;
     }
 
-    .samples { display: flex; flex-direction: column; gap: 8px; }
-    .sample-btn {
-      background: #f8faff; border: 1px solid #d0e4ff; border-radius: 8px;
-      padding: 9px 14px; font-size: 13px; color: #0068ff;
-      cursor: pointer; text-align: left; transition: background 0.15s;
+    .endpoint-note { font-size: 11px; color: var(--text-3); text-align: center; margin-top: 8px; }
+    .divider { height: 1px; background: var(--border); margin: 16px 0; }
+    .info-hint {
+      display: flex; align-items: flex-start; gap: 9px;
+      background: var(--blue-light); border-radius: var(--radius-sm);
+      padding: 10px 13px; font-size: 12px; color: #2563eb;
+      margin-bottom: 14px;
     }
-    .sample-btn:hover { background: #e8f0ff; }
-
-    .endpoint-note { font-size: 11px; color: #b0bec5; text-align: center; margin-top: 8px; }
-
-    .stat-row { display: flex; gap: 12px; margin-bottom: 16px; }
-    .stat { flex: 1; background: #f8faff; border-radius: 10px; padding: 12px 16px; text-align: center; }
-    .stat-val { font-size: 26px; font-weight: 700; color: #1e3a5f; }
-    .stat-label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .batch-controls {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0 4px;
+    }
+    .batch-controls label { font-size: 12px; color: var(--text-2); font-weight: 600; white-space: nowrap; }
   </style>
 </head>
 <body>
 
 <header>
-  <svg width="32" height="32" viewBox="0 0 36 36" fill="none">
-    <rect width="36" height="36" rx="8" fill="white"/>
-    <text x="5" y="26" font-size="20" font-weight="bold" fill="#0068ff">Z</text>
-  </svg>
-  <h1>ZaloPay AI Support</h1>
-  <span>Hệ thống Phản hồi Tự động — 3 Agent Pipeline</span>
+  <div class="header-logo">Z</div>
+  <span class="header-title">ZaloPay AI Support</span>
+  <div class="header-sep"></div>
+  <span class="header-sub">Hệ thống Phản hồi Tự động</span>
+  <div class="header-pill">AI Agent · Live</div>
 </header>
 
 <div class="container">
 
   <!-- Ticket mẫu -->
   <div class="card">
-    <div class="card-title">🎯 Ticket mẫu</div>
-    <div class="samples">
-      <button class="sample-btn" onclick="fillSample(0)">📱 Mua data Viettel thành công nhưng chưa nhận được</button>
-      <button class="sample-btn" onclick="fillSample(1)">💸 Chuyển tiền nhầm số tài khoản</button>
-      <button class="sample-btn" onclick="fillSample(2)">🔐 Không xác thực được eKYC bằng CCCD chip</button>
+    <div class="card-header">
+      <div class="card-title">
+        <div class="card-title-icon">🎯</div>
+        Ticket mẫu
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="samples-grid">
+        <button class="sample-btn" onclick="fillSample(0)">
+          <span class="s-icon">📱</span>
+          Mua data Viettel thành công nhưng chưa nhận được
+        </button>
+        <button class="sample-btn" onclick="fillSample(1)">
+          <span class="s-icon">💸</span>
+          Chuyển tiền nhầm số tài khoản
+        </button>
+        <button class="sample-btn" onclick="fillSample(2)">
+          <span class="s-icon">🔐</span>
+          Không xác thực được eKYC bằng CCCD chip
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- Tabs: Nhập tay / Batch Excel -->
-  <div class="card">
+  <!-- Tabs -->
+  <div class="card" style="overflow:hidden">
     <div class="tabs">
-      <button class="tab active" id="tab-single" onclick="switchTab('single')">✍️ Nhập ticket thủ công</button>
-      <button class="tab" id="tab-batch" onclick="switchTab('batch')">📂 Xử lý hàng loạt từ Excel</button>
+      <button class="tab active" id="tab-single" onclick="switchTab('single')">✍️&nbsp; Nhập ticket thủ công</button>
+      <button class="tab" id="tab-batch" onclick="switchTab('batch')">📂&nbsp; Xử lý hàng loạt từ Excel</button>
     </div>
 
     <!-- TAB: Nhập tay -->
-    <div class="tab-panel active" id="panel-single">
-      <div style="margin-bottom: 14px;">
-        <label>Nội dung ticket từ khách hàng</label>
+    <div class="tab-panel active card-body" id="panel-single">
+      <div class="form-group">
+        <label class="form-label">Nội dung ticket</label>
         <textarea id="ticket" placeholder="Nhập nội dung khiếu nại hoặc yêu cầu của khách hàng..."></textarea>
       </div>
-      <div>
-        <label>Kết quả kiểm tra hệ thống <span style="color:#b0bec5;font-weight:400">(không bắt buộc)</span></label>
-        <textarea id="check_result" rows="2" style="min-height:60px" placeholder="Kết quả tra cứu từ hệ thống, nhà mạng, ngân hàng..."></textarea>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Kết quả kiểm tra hệ thống <span class="optional">(không bắt buộc)</span></label>
+        <textarea id="check_result" rows="2" style="min-height:56px" placeholder="Kết quả tra cứu từ hệ thống, nhà mạng, ngân hàng..."></textarea>
       </div>
-      <button class="btn" id="submitBtn" onclick="submitTicket()">🚀 Xử lý ticket</button>
-      <p class="endpoint-note" id="endpointNote"></p>
+      <div style="margin-top:14px">
+        <button class="btn btn-full" id="submitBtn" onclick="submitTicket()">
+          <span>🚀</span> Xử lý ticket
+        </button>
+        <p class="endpoint-note" id="endpointNote"></p>
+      </div>
     </div>
 
     <!-- TAB: Batch Excel -->
-    <div class="tab-panel" id="panel-batch">
-      <div style="margin-bottom: 12px; font-size: 13px; color: #64748b; background: #eff6ff; border-radius: 8px; padding: 10px 14px;">
-        💡 Upload file Excel xuất từ <strong>Jira Ticket Analyzer</strong> (Project 2). Pipeline sẽ tự động đọc từng dòng và soạn phản hồi chuẩn ZaloPay.
+    <div class="tab-panel card-body" id="panel-batch">
+      <div class="info-hint">
+        💡 Upload file Excel xuất từ <strong>&nbsp;Jira Ticket Analyzer</strong>&nbsp;. AI sẽ tự động đọc từng dòng và soạn phản hồi chuẩn ZaloPay.
       </div>
 
       <div class="upload-zone" id="batchUploadZone"
@@ -213,97 +453,117 @@
         ondrop="handleBatchDrop(event)">
         <input type="file" id="batchFileInput" accept=".xlsx,.xls" onchange="handleBatchFile(this.files[0])">
         <div class="upload-icon">📊</div>
-        <div>Kéo thả hoặc click để chọn file Excel từ Jira Analyzer</div>
-        <div style="font-size:11px;color:#94a3b8;margin-top:4px">Hỗ trợ: .xlsx, .xls</div>
+        <div class="upload-hint">Kéo thả hoặc nhấn để chọn file Excel</div>
+        <div class="upload-sub">Hỗ trợ .xlsx, .xls · Xuất từ Jira Analyzer</div>
         <div class="file-selected" id="batchFileName"></div>
       </div>
 
-      <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
-        <div>
-          <label style="display:inline;margin-right:8px">Số lượng xử lý:</label>
-          <select id="batchLimit" style="padding:6px 10px;border:1px solid #dde3ec;border-radius:8px;font-size:13px;font-family:inherit">
-            <option value="5">5 tickets</option>
-            <option value="10" selected>10 tickets</option>
-            <option value="20">20 tickets</option>
-            <option value="50">50 tickets</option>
-            <option value="999">Tất cả</option>
-          </select>
-        </div>
+      <div class="batch-controls">
+        <label>Số lượng xử lý:</label>
+        <select id="batchLimit">
+          <option value="5">5 tickets</option>
+          <option value="10" selected>10 tickets</option>
+          <option value="20">20 tickets</option>
+          <option value="50">50 tickets</option>
+          <option value="999">Tất cả</option>
+        </select>
       </div>
 
       <!-- Progress -->
-      <div class="progress-wrap" id="batchProgress">
-        <div class="progress-bar"><div class="progress-fill" id="batchFill"></div></div>
-        <div class="progress-label">
-          <span id="batchProgressLabel"><span class="spinner-inline"></span>Đang chuẩn bị...</span>
+      <div class="progress-wrap" id="batchProgress" style="display:none">
+        <div class="progress-track"><div class="progress-fill" id="batchFill"></div></div>
+        <div class="progress-meta">
+          <span id="batchProgressLabel" style="display:flex;align-items:center;gap:6px">
+            <span class="spinner"></span><span>Đang chuẩn bị<span class="processing-dots"></span></span>
+          </span>
           <span id="batchProgressCount">0 / 0</span>
         </div>
       </div>
 
-      <button class="btn" id="batchBtn" onclick="runBatch()">⚡ Xử lý hàng loạt</button>
+      <button class="btn btn-full" id="batchBtn" onclick="runBatch()" style="margin-top:12px">
+        <span>⚡</span> Xử lý hàng loạt
+      </button>
       <p class="endpoint-note">Endpoint: /api/pipeline</p>
     </div>
   </div>
 
   <!-- Spinner nhập tay -->
-  <div id="singleSpinner" style="display:none;text-align:center;padding:20px;color:#64748b;font-size:13px">
-    <span class="spinner-inline"></span>Đang xử lý qua 3 agents...
+  <div id="singleSpinner" style="display:none">
+    <div class="card">
+      <div class="processing-state">
+        <span class="spinner"></span>
+        <span>Đang phân tích và soạn phản hồi<span class="processing-dots"></span></span>
+      </div>
+    </div>
   </div>
 
   <!-- Kết quả nhập tay -->
   <div class="card" id="resultCard" style="display:none">
-    <div class="card-title">📋 Kết quả xử lý</div>
-    <div style="margin-bottom:12px">
-      <div class="result-label">Phân loại (Agent 1)</div>
-      <div class="tags" id="tags"></div>
+    <div class="card-header">
+      <div class="card-title"><div class="card-title-icon">📋</div>Kết quả phân tích</div>
     </div>
-    <div style="margin-bottom:12px">
-      <div class="result-label">Phân tích nghiệp vụ (Agent 2)</div>
-      <div class="tags" id="analysis"></div>
-    </div>
-    <div>
-      <div class="result-label">Phản hồi chuẩn ZaloPay (Agent 0)</div>
-      <div class="response-box" id="finalResponse"></div>
+    <div class="card-body">
+      <div class="result-section">
+        <div class="result-section-label">Phân loại ticket</div>
+        <div class="tags" id="tags"></div>
+      </div>
+      <div class="divider"></div>
+      <div class="result-section">
+        <div class="result-section-label">Phân tích nghiệp vụ</div>
+        <div class="tags" id="analysis"></div>
+      </div>
+      <div class="divider"></div>
+      <div class="result-section">
+        <div class="result-section-label">Phản hồi chuẩn ZaloPay</div>
+        <div class="response-box" id="finalResponse"></div>
+      </div>
     </div>
   </div>
 
   <!-- Kết quả batch -->
   <div class="card" id="batchResultCard" style="display:none">
-    <div class="results-header">
-      <div class="card-title" style="margin-bottom:0">📊 Kết quả xử lý hàng loạt</div>
-      <button class="btn btn-green btn-sm" onclick="exportBatchExcel()">📥 Xuất Excel kết quả</button>
+    <div class="card-header">
+      <div class="card-title"><div class="card-title-icon">📊</div>Kết quả xử lý hàng loạt</div>
+      <button class="btn btn-green btn-sm" onclick="exportBatchExcel()">📥 Xuất Excel</button>
     </div>
-    <div class="stat-row" id="batchStats"></div>
-    <div style="overflow-x:auto">
-      <table class="batch-table" id="batchTable">
-        <thead>
-          <tr>
-            <th style="width:10%">Issue Key</th>
-            <th style="width:14%">Loại vấn đề</th>
-            <th style="width:12%">Root Cause</th>
-            <th style="width:8%">SLA</th>
-            <th style="width:8%">Escalate</th>
-            <th style="width:48%">Phản hồi ZaloPay</th>
-          </tr>
-        </thead>
-        <tbody id="batchTbody"></tbody>
-      </table>
+    <div class="card-body">
+      <div class="stat-row" id="batchStats"></div>
+      <div class="table-wrap">
+        <table class="batch-table" id="batchTable">
+          <thead>
+            <tr>
+              <th style="width:9%">Issue Key</th>
+              <th style="width:13%">Loại vấn đề</th>
+              <th style="width:13%">Root Cause</th>
+              <th style="width:7%">SLA</th>
+              <th style="width:9%">Escalate</th>
+              <th>Phản hồi ZaloPay</th>
+            </tr>
+          </thead>
+          <tbody id="batchTbody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
   <!-- Lỗi -->
   <div class="card" id="errorCard" style="display:none">
-    <div class="error-box" id="errorMsg"></div>
+    <div class="card-body">
+      <div class="error-box">
+        <span>⚠️</span>
+        <span id="errorMsg"></span>
+      </div>
+    </div>
   </div>
 
 </div>
 
 <script>
   const ENDPOINT = '/api/pipeline';
-  const CONCURRENCY = 3; // số ticket xử lý song song
+  const CONCURRENCY = 3;
   document.getElementById('endpointNote').textContent = 'Endpoint: ' + ENDPOINT;
 
-  // Warm-up: gọi trước để server không bị cold start khi dùng thật
+  // Warm-up
   window.addEventListener('load', function() {
     fetch(ENDPOINT, {
       method: 'POST',
@@ -312,7 +572,7 @@
     }).catch(function() {});
   });
 
-  // ── SAMPLES ────────────────────────────────────────────────────────────────
+  // ── SAMPLES ─────────────────────────────────────────────────────────────────
   const samples = [
     { ticket: 'Tôi đã mua gói data 4G Viettel 3GB qua ZaloPay lúc 9h sáng, tiền đã bị trừ nhưng đến giờ vẫn chưa nhận được data. SĐT 0912345678, giao dịch GD20260613001.', check_result: 'Nhà mạng Viettel xác nhận đã cấp data thành công lúc 9h05, hiện tại gói đang active.' },
     { ticket: 'Tôi vừa chuyển 500,000đ qua ZaloPay nhưng chuyển nhầm sang số tài khoản 0123456789 thay vì 0987654321. Giao dịch GD20260613002.', check_result: 'Giao dịch thành công, tiền đã vào tài khoản đích. Ngân hàng yêu cầu chủ tài khoản nhận liên hệ trực tiếp để hoàn trả.' },
@@ -325,15 +585,15 @@
     document.getElementById('check_result').value = samples[i].check_result;
   }
 
-  // ── TABS ───────────────────────────────────────────────────────────────────
+  // ── TABS ─────────────────────────────────────────────────────────────────────
   function switchTab(tab) {
-    ['single','batch'].forEach(t => {
+    ['single','batch'].forEach(function(t) {
       document.getElementById('tab-' + t).classList.toggle('active', t === tab);
       document.getElementById('panel-' + t).classList.toggle('active', t === tab);
     });
   }
 
-  // ── SINGLE TICKET ──────────────────────────────────────────────────────────
+  // ── SINGLE TICKET ────────────────────────────────────────────────────────────
   async function submitTicket() {
     const ticket = document.getElementById('ticket').value.trim();
     if (!ticket) { alert('Vui lòng nhập nội dung ticket.'); return; }
@@ -348,6 +608,7 @@
       const data = await callPipeline(ticket, document.getElementById('check_result').value.trim());
       renderSingleResult(data);
       document.getElementById('resultCard').style.display = 'block';
+      document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch(err) {
       showError(err.message);
     } finally {
@@ -358,33 +619,44 @@
 
   function renderSingleResult(data) {
     const c = data.classification || {};
-    const confidenceColor = { high: '#166534', medium: '#92400e', low: '#991b1b' };
-    const confidenceLabel = { high: '✅ Độ tin cậy: Cao', medium: '⚠️ Độ tin cậy: Trung bình', low: '🔴 Độ tin cậy: Thấp' };
     const conf = (c.confidence || 'medium').toLowerCase();
-    document.getElementById('tags').innerHTML = [c.category, c.sub_category, c.merchant, c.phone_number, c.amount]
-      .filter(Boolean).map(v => `<span class="tag"><strong>${v}</strong></span>`).join('')
-      + `<span class="tag" style="color:${confidenceColor[conf]||'#666'};font-weight:700">${confidenceLabel[conf]||conf}</span>`;
+    const confTag = {
+      high:   '<span class="tag tag-green">✓ Độ tin cậy cao</span>',
+      medium: '<span class="tag tag-amber">⚡ Độ tin cậy trung bình</span>',
+      low:    '<span class="tag tag-red">⚠ Độ tin cậy thấp</span>'
+    };
+
+    document.getElementById('tags').innerHTML =
+      [c.category, c.sub_category, c.merchant, c.phone_number, c.amount]
+        .filter(Boolean)
+        .map(function(v) { return '<span class="tag">' + escHtml(v) + '</span>'; })
+        .join('') + (confTag[conf] || '');
+
     const a = data.analysis || {};
     document.getElementById('analysis').innerHTML = [
-      a.root_cause ? `Nguyên nhân: ${a.root_cause}` : null,
-      a.refund_allowed !== undefined ? (a.refund_allowed ? '✅ Được hoàn tiền' : '❌ Không hoàn tiền') : null,
-      a.escalate ? '⚠️ Cần escalate' : null
-    ].filter(Boolean).map(v => `<span class="tag">${v}</span>`).join('');
+      a.root_cause   ? '<span class="tag tag-neutral">📌 ' + escHtml(a.root_cause) + '</span>' : null,
+      a.refund_allowed !== undefined
+        ? (a.refund_allowed ? '<span class="tag tag-green">✅ Được hoàn tiền</span>' : '<span class="tag tag-red">✗ Không hoàn tiền</span>')
+        : null,
+      a.escalate ? '<span class="tag tag-amber">🔺 Cần escalate</span>' : null
+    ].filter(Boolean).join('');
 
-    // Human review warning
     const reviewEl = document.getElementById('humanReviewBanner');
     if (reviewEl) reviewEl.remove();
     if (data.needs_human_review) {
       const banner = document.createElement('div');
       banner.id = 'humanReviewBanner';
-      banner.style.cssText = 'background:#fff3cd;border:1px solid #ffc107;border-left:4px solid #e65100;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#7c4700;';
-      banner.innerHTML = '⚠️ <strong>Cần xem xét thủ công:</strong> Ticket này có nội dung mơ hồ, AI xử lý ở mức tin cậy thấp. Đề nghị nhân viên CS kiểm tra lại phản hồi trước khi gửi khách hàng.';
-      document.getElementById('resultCard').insertBefore(banner, document.getElementById('resultCard').firstChild.nextSibling);
+      banner.className = 'alert-banner';
+      banner.innerHTML = '<span>⚠️</span><span><strong>Cần xem xét thủ công:</strong> Nội dung mơ hồ, AI xử lý ở mức tin cậy thấp. Đề nghị CS kiểm tra trước khi gửi khách hàng.</span>';
+      document.getElementById('resultCard').querySelector('.card-body').insertBefore(
+        banner,
+        document.getElementById('resultCard').querySelector('.card-body').firstChild
+      );
     }
     document.getElementById('finalResponse').textContent = data.final_response || '(Không có phản hồi)';
   }
 
-  // ── BATCH FILE HANDLING ────────────────────────────────────────────────────
+  // ── BATCH FILE ───────────────────────────────────────────────────────────────
   let batchRows = [];
 
   function handleBatchDrop(e) {
@@ -396,7 +668,6 @@
 
   function handleBatchFile(file) {
     if (!file) return;
-    document.getElementById('batchFileName').textContent = '✅ ' + file.name;
     const reader = new FileReader();
     reader.onload = function(e) {
       const wb = XLSX.read(e.target.result, { type: 'binary' });
@@ -408,7 +679,7 @@
     reader.readAsBinaryString(file);
   }
 
-  // ── BATCH PROCESSING ───────────────────────────────────────────────────────
+  // ── BATCH PROCESSING ─────────────────────────────────────────────────────────
   let batchResults = [];
 
   async function runBatch() {
@@ -426,7 +697,6 @@
 
     let completed = 0, ok = 0, fail = 0;
 
-    // Xử lý song song theo từng chunk CONCURRENCY ticket cùng lúc
     for (let i = 0; i < rows.length; i += CONCURRENCY) {
       const chunk = rows.slice(i, Math.min(i + CONCURRENCY, rows.length));
 
@@ -444,35 +714,27 @@
 
         try {
           const data = await callPipeline(ticketText, checkResult);
-          batchResults[idx] = {
-            key, type, rootCause, sla, escalateTo,
-            final_response: data.final_response || '',
-            classification: data.classification || {},
-            analysis: data.analysis || {},
-            status: 'ok'
-          };
+          batchResults[idx] = { key, type, rootCause, sla, escalateTo, final_response: data.final_response || '', classification: data.classification || {}, analysis: data.analysis || {}, status: 'ok' };
           ok++;
         } catch(err) {
           batchResults[idx] = { key, type, rootCause, sla, escalateTo, final_response: '', error: err.message, status: 'error' };
           fail++;
         }
 
-        // Cập nhật progress sau mỗi ticket hoàn thành
         completed++;
         const pct = Math.round((completed / rows.length) * 100);
         document.getElementById('batchFill').style.width = pct + '%';
         document.getElementById('batchProgressLabel').innerHTML =
-          '<span class="spinner-inline"></span>Đang xử lý song song... <strong>' + completed + ' / ' + rows.length + '</strong> ticket';
-        document.getElementById('batchProgressCount').textContent = completed + ' / ' + rows.length;
+          '<span class="spinner" style="flex-shrink:0"></span>' +
+          '<span>Đang xử lý · <strong>' + completed + '</strong> / ' + rows.length + ' ticket</span>';
+        document.getElementById('batchProgressCount').textContent = pct + '%';
       }));
     }
 
-    // Done
     document.getElementById('batchFill').style.width = '100%';
-    document.getElementById('batchProgressLabel').textContent = '✅ Hoàn tất!';
-    document.getElementById('batchProgressCount').textContent = rows.length + ' / ' + rows.length;
+    document.getElementById('batchProgressLabel').innerHTML = '✅ Hoàn tất ' + rows.length + ' ticket';
+    document.getElementById('batchProgressCount').textContent = '100%';
     btn.disabled = false;
-
     renderBatchResults(ok, fail);
   }
 
@@ -480,8 +742,8 @@
     let text = '[' + key + '] ';
     if (type) text += 'Loại: ' + type + '. ';
     if (suggestion) text += 'Vấn đề: ' + suggestion;
-    else if (rootCause) text += 'Nguyên nhân ghi nhận: ' + rootCause;
-    if (escalateTo) text += ' (Cần escalate đến: ' + escalateTo + ')';
+    else if (rootCause) text += 'Nguyên nhân: ' + rootCause;
+    if (escalateTo) text += ' (Escalate đến: ' + escalateTo + ')';
     return text.trim();
   }
 
@@ -495,20 +757,20 @@
   function renderBatchResults(ok, fail) {
     const total = ok + fail;
     document.getElementById('batchStats').innerHTML =
-      '<div class="stat"><div class="stat-val" style="color:#1e3a5f">' + total + '</div><div class="stat-label">Tổng xử lý</div></div>' +
-      '<div class="stat"><div class="stat-val" style="color:#166534">' + ok + '</div><div class="stat-label">Thành công</div></div>' +
-      '<div class="stat"><div class="stat-val" style="color:#991b1b">' + fail + '</div><div class="stat-label">Lỗi</div></div>';
+      '<div class="stat"><div class="stat-val" style="color:var(--navy)">' + total + '</div><div class="stat-label">Tổng xử lý</div></div>' +
+      '<div class="stat"><div class="stat-val" style="color:var(--green)">' + ok + '</div><div class="stat-label">Thành công</div></div>' +
+      '<div class="stat"><div class="stat-val" style="color:var(--red)">' + fail + '</div><div class="stat-label">Lỗi</div></div>';
 
     const tbody = document.getElementById('batchTbody');
     tbody.innerHTML = batchResults.map(function(r, idx) {
       const response = r.status === 'ok' ? r.final_response : ('❌ ' + (r.error || 'Lỗi không xác định'));
       const previewId = 'prev-' + idx;
       return '<tr>' +
-        '<td><span class="key-link">' + r.key + '</span></td>' +
-        '<td style="font-size:11px;color:#475569">' + (r.type || '—') + '</td>' +
-        '<td style="font-size:11px">' + (r.rootCause || '—') + '</td>' +
-        '<td><span class="badge ' + (r.sla === 'BREACH' ? 'badge-err' : 'badge-ok') + '">' + (r.sla || 'OK') + '</span></td>' +
-        '<td style="font-size:11px;color:#991b1b;font-weight:600">' + (r.escalateTo || '—') + '</td>' +
+        '<td><span class="key-chip">' + escHtml(r.key) + '</span></td>' +
+        '<td style="color:var(--text-2)">' + escHtml(r.type || '—') + '</td>' +
+        '<td style="color:var(--text-2)">' + escHtml(r.rootCause || '—') + '</td>' +
+        '<td><span class="badge ' + (r.sla === 'BREACH' ? 'badge-err' : 'badge-ok') + '">' + escHtml(r.sla || 'OK') + '</span></td>' +
+        '<td style="color:var(--red);font-weight:600;font-size:11px">' + escHtml(r.escalateTo || '—') + '</td>' +
         '<td><div class="response-preview" id="' + previewId + '">' + escHtml(response) + '</div>' +
           (response.length > 150 ? '<button class="expand-btn" onclick="toggleExpand(\'' + previewId + '\',this)">▼ Xem thêm</button>' : '') +
         '</td>' +
@@ -520,47 +782,44 @@
   }
 
   function toggleExpand(id, btn) {
-    const el = document.getElementById(id);
-    const expanded = el.classList.toggle('expanded');
+    const expanded = document.getElementById(id).classList.toggle('expanded');
     btn.textContent = expanded ? '▲ Thu gọn' : '▼ Xem thêm';
   }
 
-  // ── EXPORT BATCH EXCEL ────────────────────────────────────────────────────
+  // ── EXPORT ───────────────────────────────────────────────────────────────────
   function exportBatchExcel() {
     if (!batchResults.length) return;
     const date = new Date().toISOString().slice(0,10);
-
-    const wsData = [
-      ['Issue Key','Loại vấn đề','Root Cause','SLA Status','Escalate đến','Phản hồi ZaloPay','Trạng thái']
-    ];
+    const wsData = [['Issue Key','Loại vấn đề','Root Cause','SLA Status','Escalate đến','Phản hồi ZaloPay','Trạng thái']];
     batchResults.forEach(function(r) {
       wsData.push([r.key, r.type||'', r.rootCause||'', r.sla||'OK', r.escalateTo||'', r.final_response||r.error||'', r.status==='ok'?'OK':'Lỗi']);
     });
-
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(wsData);
-
-    // Column widths
     ws['!cols'] = [16,22,28,11,22,80,10].map(function(w){ return {wch:w}; });
-
     XLSX.utils.book_append_sheet(wb, ws, 'Phan hoi ZaloPay');
     XLSX.writeFile(wb, 'zalopay_response_' + date + '.xlsx');
   }
 
-  // ── HELPERS ────────────────────────────────────────────────────────────────
+  // ── HELPERS ──────────────────────────────────────────────────────────────────
   async function callPipeline(ticket, check_result) {
     const res = await fetch(ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ticket, check_result: check_result || '' })
     });
-    const data = await res.json();
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch(e) {
+      const preview = text.slice(0, 120).replace(/<[^>]+>/g, '').trim();
+      throw new Error('Server lỗi (HTTP ' + res.status + '): ' + (preview || 'Không có phản hồi'));
+    }
     if (!res.ok || data.error) throw new Error(data.error || 'HTTP ' + res.status);
     return data;
   }
 
   function showError(msg) {
-    document.getElementById('errorMsg').textContent = '❌ Lỗi: ' + msg;
+    document.getElementById('errorMsg').textContent = msg;
     document.getElementById('errorCard').style.display = 'block';
   }
 
