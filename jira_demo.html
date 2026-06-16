@@ -3,169 +3,487 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ZaloPay Jira Analyzer</title>
+  <title>Phân tích Vận hành AI — Zalopay Command Center</title>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      --cyan:        #00D9FF;
+      --cyan-dim:    rgba(0,217,255,0.1);
+      --cyan-glow:   rgba(0,217,255,0.35);
+      --cyan-border: rgba(0,217,255,0.22);
+      --purple:      #8B5CF6;
+      --purple-dim:  rgba(139,92,246,0.1);
+      --purple-glow: rgba(139,92,246,0.35);
+      --purple-border: rgba(139,92,246,0.22);
+      --accent:      #22D3EE;
+      --green:       #22C55E;
+      --green-dim:   rgba(34,197,94,0.1);
+      --amber:       #F59E0B;
+      --amber-dim:   rgba(245,158,11,0.1);
+      --red:         #EF4444;
+      --red-dim:     rgba(239,68,68,0.1);
+      --bg:          #050816;
+      --bg2:         #0F172A;
+      --bg3:         #111827;
+      --glass:       rgba(15,23,42,0.8);
+      --glass2:      rgba(17,24,39,0.7);
+      --border:      rgba(0,217,255,0.09);
+      --border2:     rgba(255,255,255,0.06);
+      --text:        #FFFFFF;
+      --text2:       #CBD5E1;
+      --text3:       #64748B;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+      overflow-x: hidden;
+    }
+
+    /* ═══ BACKGROUND ═══ */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(0,217,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,217,255,0.02) 1px, transparent 1px);
+      background-size: 55px 55px;
+      pointer-events: none;
+      animation: gridShift 25s linear infinite;
+    }
+    @keyframes gridShift { 0% { background-position: 0 0; } 100% { background-position: 55px 55px; } }
+
+    body::after {
+      content: '';
+      position: fixed; top: 0; left: 0; right: 0; height: 50vh; z-index: 0;
+      background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(139,92,246,0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .page-wrap { position: relative; z-index: 1; }
+
+    /* ═══ HEADER ═══ */
     header {
-      background: linear-gradient(135deg, #1e3a5f, #2563eb);
-      color: white; padding: 16px 24px;
-      display: flex; align-items: center; gap: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      background: rgba(5,8,22,0.92);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px; height: 64px;
+      display: flex; align-items: center; gap: 16px;
+      position: sticky; top: 0; z-index: 100;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
     }
-    .logo { width: 36px; height: 36px; background: rgba(255,255,255,0.18); border-radius: 8px;
-      display: flex; align-items: center; justify-content: center; font-size: 18px; }
-    header h1 { font-size: 18px; font-weight: 700; }
-    header span { font-size: 12px; opacity: 0.7; margin-left: auto; }
+    header::before {
+      content: '';
+      position: absolute; left: 0; right: 0; top: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--purple), var(--cyan), transparent);
+    }
 
-    .container { max-width: 1000px; margin: 28px auto; padding: 0 16px; }
+    .header-logo-box {
+      width: 38px; height: 38px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--purple), var(--cyan));
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 18px;
+      color: #fff; flex-shrink: 0;
+      box-shadow: 0 0 16px var(--purple-glow);
+    }
+    .header-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px; font-weight: 700; letter-spacing: 0.06em; color: var(--text);
+    }
+    .header-sep { width: 1px; height: 18px; background: rgba(255,255,255,0.1); }
+    .header-sub { font-size: 11px; color: var(--text3); letter-spacing: 0.05em; }
+    .header-back {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; color: var(--text3); text-decoration: none;
+      font-family: 'Orbitron', sans-serif; letter-spacing: 0.08em;
+      padding: 6px 12px; border: 1px solid var(--border2); border-radius: 6px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .header-back:hover { color: var(--purple); border-color: var(--purple-border); }
+    .header-status {
+      margin-left: auto; display: flex; align-items: center; gap: 6px;
+      padding: 5px 14px; border-radius: 999px;
+      background: var(--purple-dim); border: 1px solid var(--purple-border);
+      font-family: 'Orbitron', sans-serif; font-size: 10px; letter-spacing: 0.1em; color: var(--purple);
+    }
+    .status-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--purple); box-shadow: 0 0 6px var(--purple);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.75); } }
 
-    .card { background: white; border-radius: 12px; padding: 22px; margin-bottom: 18px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-    .card h2 { font-size: 14px; font-weight: 700; color: #1e293b; margin-bottom: 14px; }
+    /* ═══ CONTAINER ═══ */
+    .container { max-width: 1040px; margin: 0 auto; padding: 32px 20px 64px; }
 
+    /* ═══ PAGE TITLE ═══ */
+    .page-title-wrap {
+      margin-bottom: 28px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    }
+    .page-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 18px; font-weight: 800; letter-spacing: 0.06em;
+      background: linear-gradient(135deg, #fff, var(--purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .page-tag {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px; letter-spacing: 0.2em;
+      padding: 4px 12px; border: 1px solid var(--purple-border);
+      border-radius: 4px; color: var(--purple); background: var(--purple-dim);
+      text-transform: uppercase;
+    }
+
+    /* ═══ GLASS CARD ═══ */
+    .card {
+      background: var(--glass); border: 1px solid var(--border2);
+      border-radius: 14px; padding: 0;
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      margin-bottom: 18px; overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: var(--border); }
+
+    .card-header {
+      padding: 14px 24px; border-bottom: 1px solid var(--border2);
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(255,255,255,0.015);
+    }
+    .card-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+      color: var(--text); display: flex; align-items: center; gap: 8px;
+      text-transform: uppercase;
+    }
+    .card-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .card-dot.purple { background: var(--purple); box-shadow: 0 0 6px var(--purple); }
+    .card-dot.cyan   { background: var(--cyan);   box-shadow: 0 0 6px var(--cyan); }
+    .card-body { padding: 22px 24px; }
+
+    /* ═══ UPLOAD ZONE ═══ */
     .upload-zone {
-      border: 2px dashed #cbd5e1; border-radius: 10px; padding: 36px;
-      text-align: center; cursor: pointer; transition: all 0.2s; background: #f8faff;
+      border: 1px dashed rgba(139,92,246,0.3); border-radius: 12px;
+      padding: 40px 20px; text-align: center; cursor: pointer;
+      transition: all 0.2s; color: var(--text3);
+      background: rgba(139,92,246,0.03);
     }
-    .upload-zone:hover, .upload-zone.dragover { border-color: #2563eb; background: #eff6ff; }
-    .upload-zone .icon { font-size: 36px; margin-bottom: 10px; }
-    .upload-zone p { font-size: 14px; color: #64748b; }
-    .upload-zone strong { color: #2563eb; }
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--purple); background: var(--purple-dim);
+      color: var(--purple); box-shadow: 0 0 30px rgba(139,92,246,0.08);
+    }
+    .upload-zone.file-selected {
+      border-color: var(--green); background: var(--green-dim); color: var(--green);
+    }
+    .upload-icon { font-size: 36px; margin-bottom: 12px; }
+    .upload-hint {
+      font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    }
+    .upload-sub { font-size: 11px; margin-top: 6px; opacity: 0.7; }
     #fileInput { display: none; }
-    .file-selected { background: #f0fdf4; border-color: #86efac; }
-    .file-selected p { color: #166534; }
 
-    .btn {
-      background: linear-gradient(135deg, #1e3a5f, #2563eb);
-      color: white; border: none; border-radius: 9px;
-      padding: 12px 28px; font-size: 14px; font-weight: 600;
-      cursor: pointer; width: 100%; margin-top: 14px; font-family: inherit;
-      box-shadow: 0 4px 14px rgba(37,99,235,0.3); transition: opacity 0.2s;
+    /* ═══ CONTROLS ═══ */
+    .controls-row {
+      display: flex; align-items: center; gap: 16px; margin-top: 16px; flex-wrap: wrap;
     }
-    .btn:disabled { background: #94a3b8; box-shadow: none; cursor: not-allowed; }
+    .control-label {
+      font-family: 'Orbitron', sans-serif; font-size: 9px; font-weight: 700;
+      letter-spacing: 0.15em; color: var(--text3); white-space: nowrap;
+    }
+    select {
+      border: 1px solid var(--border2); border-radius: 8px;
+      padding: 8px 12px; font-size: 13px; font-family: 'Inter', sans-serif;
+      background: var(--bg2); color: var(--text); cursor: pointer; outline: none;
+    }
+    select:focus { border-color: var(--purple); }
 
-    .spinner { display: none; text-align: center; padding: 28px; color: #64748b; font-size: 14px; }
-    .spin { display: inline-block; width: 20px; height: 20px; border: 3px solid #ddd;
-      border-top-color: #2563eb; border-radius: 50%;
-      animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 8px; }
+    /* ═══ BUTTON ═══ */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      border: none; border-radius: 8px; padding: 12px 24px;
+      font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.1em; cursor: pointer; transition: all 0.2s;
+      white-space: nowrap; text-transform: uppercase;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--purple), #6d28d9);
+      color: #fff; box-shadow: 0 0 24px rgba(139,92,246,0.25);
+      width: 100%; margin-top: 16px;
+    }
+    .btn-primary:hover:not(:disabled) { box-shadow: 0 0 40px rgba(139,92,246,0.45); transform: translateY(-1px); }
+    .btn-primary:disabled { background: var(--bg2); color: var(--text3); box-shadow: none; cursor: not-allowed; }
+
+    .btn-export {
+      background: linear-gradient(135deg, #1d4ed8, var(--cyan));
+      color: #fff; padding: 8px 18px; font-size: 10px;
+      box-shadow: 0 0 16px rgba(0,217,255,0.15);
+    }
+    .btn-export:hover { box-shadow: 0 0 28px rgba(0,217,255,0.3); transform: translateY(-1px); }
+
+    .btn-green-sm {
+      background: linear-gradient(135deg, #059669, var(--green));
+      color: #fff; padding: 8px 18px; font-size: 10px;
+      box-shadow: 0 0 16px rgba(34,197,94,0.15);
+    }
+    .btn-green-sm:hover { box-shadow: 0 0 28px rgba(34,197,94,0.3); transform: translateY(-1px); }
+
+    /* ═══ SPINNER ═══ */
     @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner-wrap { display: none; text-align: center; padding: 40px 24px; }
+    .spin {
+      display: inline-block; width: 24px; height: 24px;
+      border: 2px solid rgba(139,92,246,0.2); border-top-color: var(--purple);
+      border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 10px;
+    }
+    .spinner-text {
+      font-family: 'Orbitron', sans-serif; font-size: 12px; letter-spacing: 0.1em; color: var(--purple);
+    }
+
+    /* Progress inside spinner */
+    .progress-wrap { display: none; margin-top: 20px; max-width: 440px; margin-left: auto; margin-right: auto; }
+    .progress-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--text3); margin-bottom: 8px; }
+    .progress-meta span { font-family: 'Orbitron', sans-serif; font-size: 9px; letter-spacing: 0.08em; }
+    .progress-track {
+      height: 4px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden;
+      border: 1px solid rgba(139,92,246,0.2);
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--purple), var(--cyan));
+      border-radius: 99px; transition: width 0.35s ease; width: 0%;
+      box-shadow: 0 0 8px var(--purple);
+    }
+
+    /* ═══ ERROR ═══ */
+    .error-box {
+      background: var(--red-dim); border: 1px solid rgba(239,68,68,0.35);
+      border-radius: 10px; padding: 16px; color: var(--red); font-size: 13px; display: none;
+      margin-bottom: 16px;
+    }
+
+    /* ═══ RESULT ═══ */
+    .result-section { display: none; }
 
     /* Summary */
     .summary-box {
-      background: #eff6ff; border: 1px solid #bfdbfe; border-left: 4px solid #2563eb;
-      border-radius: 8px; padding: 14px 16px; font-size: 14px; color: #1e3a5f;
-      line-height: 1.7; margin-bottom: 18px;
+      background: var(--purple-dim);
+      border: 1px solid var(--purple-border); border-left: 3px solid var(--purple);
+      border-radius: 8px; padding: 14px 18px;
+      font-size: 13.5px; color: var(--text2); line-height: 1.7; margin-bottom: 20px;
     }
 
-    /* Insights */
-    .insights-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 18px; }
-    .insight-card { background: #f8faff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; }
-    .insight-label { font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
-    .insight-item { font-size: 13px; color: #334155; padding: 3px 0; }
-    .breach-rate { font-size: 22px; font-weight: 700; color: #dc2626; }
+    /* Stat cards */
+    .insights-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px; margin-bottom: 4px;
+    }
+    .insight-card {
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border2);
+      border-radius: 10px; padding: 16px 18px;
+      transition: border-color 0.2s;
+    }
+    .insight-card:hover { border-color: var(--border); }
+    .insight-label {
+      font-family: 'Orbitron', sans-serif; font-size: 8px; font-weight: 700;
+      color: var(--text3); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 10px;
+    }
+    .insight-val {
+      font-family: 'Orbitron', sans-serif; font-size: 28px; font-weight: 800; line-height: 1;
+    }
+    .insight-val.blue   { color: var(--cyan); }
+    .insight-val.red    { color: var(--red); }
+    .insight-val.amber  { color: var(--amber); }
+    .insight-val.green  { color: var(--green); }
+    .insight-val.purple { color: var(--purple); }
 
-    /* Ticket list */
-    .ticket { border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 12px; }
-    .ticket.breach { border-color: #fca5a5; background: #fff5f5; }
-    .ticket.at-risk { border-color: #fed7aa; background: #fffbf5; }
-    .ticket.ok { border-color: #bbf7d0; background: #f0fdf4; }
-    .ticket-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
-    .ticket-key { font-weight: 700; color: #1e3a5f; font-size: 14px; }
-    .badge { border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 600; }
-    .badge-breach { background: #fee2e2; color: #dc2626; }
-    .badge-risk { background: #ffedd5; color: #c2410c; }
-    .badge-ok { background: #dcfce7; color: #166534; }
-    .badge-priority { background: #fef9c3; color: #854d0e; }
-    .ticket-type { font-size: 12px; color: #64748b; background: #f1f5f9; border-radius: 12px; padding: 2px 10px; }
+    /* ═══ TICKET CARDS ═══ */
+    .ticket {
+      border: 1px solid var(--border2); border-radius: 10px; padding: 16px 18px;
+      margin-bottom: 12px; background: rgba(255,255,255,0.015);
+      transition: border-color 0.2s;
+    }
+    .ticket:last-child { margin-bottom: 0; }
+    .ticket.breach {
+      border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.04);
+    }
+    .ticket.breach:hover { border-color: rgba(239,68,68,0.5); }
+    .ticket.at-risk {
+      border-color: rgba(245,158,11,0.25); background: rgba(245,158,11,0.04);
+    }
+    .ticket.at-risk:hover { border-color: rgba(245,158,11,0.4); }
+    .ticket.ok {
+      border-color: rgba(34,197,94,0.2); background: rgba(34,197,94,0.03);
+    }
+    .ticket.ok:hover { border-color: rgba(34,197,94,0.35); }
+
+    .ticket-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 12px; flex-wrap: wrap;
+    }
+    .ticket-key {
+      font-family: 'Orbitron', sans-serif; font-weight: 700; color: var(--cyan);
+      font-size: 13px; letter-spacing: 0.06em;
+    }
+    .ticket-type {
+      font-size: 11px; color: var(--text3);
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border2);
+      border-radius: 99px; padding: 2px 10px;
+    }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      border-radius: 4px; padding: 3px 10px;
+      font-family: 'Orbitron', sans-serif; font-size: 9px; font-weight: 700;
+      letter-spacing: 0.08em; white-space: nowrap;
+    }
+    .badge-breach  { background: var(--red-dim);   color: var(--red);   border: 1px solid rgba(239,68,68,0.3); }
+    .badge-risk    { background: var(--amber-dim);  color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+    .badge-ok      { background: var(--green-dim);  color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+    .badge-priority { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+
     .ticket-body { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .field-label { font-size: 11px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 4px; }
-    .field-value { font-size: 13px; color: #334155; line-height: 1.6; }
+    .field-label {
+      font-family: 'Orbitron', sans-serif; font-size: 8px; font-weight: 700;
+      color: var(--text3); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 5px;
+    }
+    .field-value { font-size: 13px; color: var(--text2); line-height: 1.65; }
+    .field-value.escalate { color: var(--red); font-weight: 600; }
 
-    .error-box { background: #fff0f0; border: 1px solid #ffcccc; border-radius: 8px;
-      padding: 14px; color: #cc0000; font-size: 13px; display: none; }
-
-    .result-section { display: none; }
-
-    .section-title { font-size: 13px; font-weight: 700; color: #475569; text-transform: uppercase;
-      letter-spacing: .5px; margin-bottom: 12px; }
+    /* ═══ SECTION LABEL ═══ */
+    .section-label {
+      font-family: 'Orbitron', sans-serif; font-size: 9px; font-weight: 700;
+      color: var(--text3); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 14px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(90deg, var(--border2), transparent);
+    }
   </style>
 </head>
 <body>
+<div class="page-wrap">
 
+<!-- HEADER -->
 <header>
-  <div class="logo">📋</div>
-  <h1>ZaloPay Jira Analyzer</h1>
-  <span>AI Phân tích Ticket Tự động</span>
+  <div class="header-logo-box">Z</div>
+  <span class="header-title">Phân tích Vận hành AI</span>
+  <div class="header-sep"></div>
+  <span class="header-sub">Công cụ Phân tích Jira Ticket</span>
+  <a href="index.html" class="header-back">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    TRANG CHỦ
+  </a>
+  <div class="header-status">
+    <div class="status-dot"></div>
+    PHÂN TÍCH · HOẠT ĐỘNG
+  </div>
 </header>
 
 <div class="container">
 
+  <div class="page-title-wrap">
+    <h1 class="page-title">PHÂN TÍCH VẬN HÀNH</h1>
+    <span class="page-tag">Phân tích AI Jira</span>
+  </div>
+
+  <!-- UPLOAD CARD -->
   <div class="card">
-    <h2>📂 Upload file Jira Export</h2>
-    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()"
-         ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)">
-      <div class="icon">📊</div>
-      <p><strong>Chọn file Excel hoặc CSV</strong> hoặc kéo thả vào đây</p>
-      <p style="font-size:12px;margin-top:6px">Hỗ trợ .xlsx và .csv export từ Jira</p>
+    <div class="card-header">
+      <div class="card-title"><div class="card-dot purple"></div>Tải dữ liệu</div>
     </div>
-    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" onchange="fileSelected(this)">
-    <div style="display:flex;align-items:center;gap:12px;margin-top:14px">
-      <label style="font-size:13px;color:#64748b;white-space:nowrap">Số dòng tối đa:</label>
-      <select id="limitSelect" style="border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;font-family:inherit;background:#f8faff">
-        <option value="5">5 tickets</option>
-        <option value="10" selected>10 tickets</option>
-        <option value="20">20 tickets</option>
-        <option value="50">50 tickets (chậm)</option>
-      </select>
-    </div>
-    <button class="btn" id="analyzeBtn" onclick="analyze()" disabled>🔍 Phân tích Ticket</button>
-  </div>
-
-  <div class="spinner" id="spinner">
-    <div class="spin"></div>
-    <span id="spinnerText">Đang phân tích tickets với AI...</span>
-    <div id="progressBar" style="display:none;margin-top:12px;width:100%;max-width:400px;margin-left:auto;margin-right:auto">
-      <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:6px">
-        <span id="progressLabel">Đang xử lý...</span>
-        <span id="progressCount"></span>
+    <div class="card-body">
+      <div class="upload-zone" id="uploadZone"
+        onclick="document.getElementById('fileInput').click()"
+        ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)">
+        <div class="upload-icon">📊</div>
+        <div class="upload-hint">Chọn file Excel hoặc CSV</div>
+        <div class="upload-sub">Hỗ trợ .xlsx, .csv xuất từ Jira</div>
       </div>
-      <div style="background:#e2e8f0;border-radius:99px;height:6px;overflow:hidden">
-        <div id="progressFill" style="height:100%;background:linear-gradient(90deg,#1e3a5f,#2563eb);border-radius:99px;transition:width 0.3s ease;width:0%"></div>
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" onchange="fileSelected(this)">
+      <div class="controls-row">
+        <span class="control-label">GIỚI HẠN TICKET:</span>
+        <select id="limitSelect">
+          <option value="5">5 ticket</option>
+          <option value="10" selected>10 ticket</option>
+          <option value="20">20 ticket</option>
+          <option value="50">50 ticket</option>
+        </select>
       </div>
+      <button class="btn btn-primary" id="analyzeBtn" onclick="analyze()" disabled>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        BẮT ĐẦU PHÂN TÍCH
+      </button>
     </div>
   </div>
 
+  <!-- SPINNER -->
+  <div class="spinner-wrap" id="spinner">
+    <div class="card">
+      <div class="card-body" style="text-align:center;padding:32px">
+        <span class="spin"></span>
+        <span class="spinner-text" id="spinnerText">ĐANG PHÂN TÍCH TICKET VỚI AI</span>
+        <div class="progress-wrap" id="progressBar">
+          <div class="progress-meta">
+            <span id="progressLabel">Đang xử lý</span>
+            <span id="progressCount"></span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ERROR -->
   <div class="error-box" id="errorBox"></div>
 
+  <!-- RESULTS -->
   <div class="result-section" id="resultSection">
 
+    <!-- OVERVIEW -->
     <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <div class="section-title" style="margin-bottom:0">📊 Tổng quan</div>
+      <div class="card-header">
+        <div class="card-title"><div class="card-dot cyan"></div>Tổng quan điều hành</div>
         <div style="display:flex;gap:8px">
-          <button onclick="exportDashboard()" style="background:linear-gradient(135deg,#1e3a5f,#2563eb);color:white;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">
-            📊 Xuất Dashboard
+          <button onclick="exportDashboard()" class="btn btn-export">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>
+            XUẤT BẢNG ĐIỀU KHIỂN
           </button>
-          <button onclick="exportExcel()" style="background:linear-gradient(135deg,#166534,#16a34a);color:white;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">
-            📥 Xuất Excel
+          <button onclick="exportExcel()" class="btn btn-green-sm">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            XUẤT EXCEL
           </button>
         </div>
       </div>
-      <div class="summary-box" id="summaryBox"></div>
-      <div class="insights-grid" id="insightsGrid"></div>
+      <div class="card-body">
+        <div class="summary-box" id="summaryBox"></div>
+        <div class="section-label">Chỉ số thông minh AI</div>
+        <div class="insights-grid" id="insightsGrid"></div>
+      </div>
     </div>
 
+    <!-- TICKET DETAILS -->
     <div class="card">
-      <div class="section-title">🎫 Chi tiết từng Ticket</div>
-      <div id="ticketList"></div>
+      <div class="card-header">
+        <div class="card-title"><div class="card-dot purple"></div>Báo cáo Ticket thông minh</div>
+      </div>
+      <div class="card-body">
+        <div id="ticketList"></div>
+      </div>
     </div>
 
   </div>
 
 </div>
+</div><!-- /page-wrap -->
 
 <script>
   const ENDPOINT = '/api/analyze';
@@ -176,8 +494,7 @@
   function dragOver(e) { e.preventDefault(); document.getElementById('uploadZone').classList.add('dragover'); }
   function dragLeave(e) { document.getElementById('uploadZone').classList.remove('dragover'); }
   function dropFile(e) {
-    e.preventDefault();
-    dragLeave(e);
+    e.preventDefault(); dragLeave(e);
     const f = e.dataTransfer.files[0];
     if (f) setFile(f);
   }
@@ -187,7 +504,7 @@
     selectedFile = f;
     const zone = document.getElementById('uploadZone');
     zone.classList.add('file-selected');
-    zone.innerHTML = `<div class="icon">✅</div><p><strong>${f.name}</strong></p><p style="font-size:12px;margin-top:4px">${(f.size/1024).toFixed(1)} KB — nhấn để đổi file</p>`;
+    zone.innerHTML = `<div class="upload-icon">✅</div><div class="upload-hint">${f.name}</div><div class="upload-sub">${(f.size/1024).toFixed(1)} KB — nhấp để thay đổi</div>`;
     document.getElementById('analyzeBtn').disabled = false;
   }
 
@@ -202,20 +519,16 @@
   ];
   const BATCH_SIZE = 5;
 
-  function getKey(r) {
-    return r['Issue key'] || r['Issue Key'] || r['Key'] || '';
-  }
-  function getType(r) {
-    return r['Custom field (Customer Request Type)'] || r['Customer Request Type'] || r['Loại vấn đề'] || '';
-  }
+  function getKey(r) { return r['Issue key'] || r['Issue Key'] || r['Key'] || ''; }
+  function getType(r) { return r['Custom field (Customer Request Type)'] || r['Customer Request Type'] || r['Loại vấn đề'] || ''; }
+
   function formatTicketText(r) {
     const lines = [], seen = new Set();
     for (const f of IMPORTANT_FIELDS) {
       let v = (r[f] || '').toString().trim();
       if (!v || v === 'None' || v === 'nan') continue;
       const k = f.replace('Custom field (','').replace(')','').trim() + '|' + v.slice(0,50);
-      if (seen.has(k)) continue;
-      seen.add(k);
+      if (seen.has(k)) continue; seen.add(k);
       if (f.includes('Description') && v.length > 600) v = v.slice(0,600) + '...';
       lines.push(`${f}: ${v}`);
     }
@@ -226,19 +539,17 @@
     const pct = Math.round((current / total) * 100);
     document.getElementById('progressBar').style.display = 'block';
     document.getElementById('progressFill').style.width = pct + '%';
-    document.getElementById('progressLabel').textContent = done
-      ? `✅ Hoàn tất ${key}`
-      : `⏳ Đang phân tích: ${key}`;
-    document.getElementById('progressCount').textContent = current + ' / ' + total + ' tickets';
+    document.getElementById('progressLabel').textContent = done ? `HOÀN TẤT: ${key}` : `ĐANG QUÉT: ${key}`;
+    document.getElementById('progressCount').textContent = current + ' / ' + total;
     document.getElementById('spinnerText').textContent = done
-      ? `Xong ${current}/${total} tickets`
-      : `Đang xử lý batch (${current}/${total})...`;
+      ? `HOÀN THÀNH ${current}/${total} TICKET`
+      : `ĐANG XỬ LÝ LÔ (${current}/${total})`;
   }
 
   function resetProgress() {
     document.getElementById('progressBar').style.display = 'none';
     document.getElementById('progressFill').style.width = '0%';
-    document.getElementById('spinnerText').textContent = 'Đang phân tích tickets với AI...';
+    document.getElementById('spinnerText').textContent = 'ĐANG PHÂN TÍCH TICKET VỚI AI';
   }
 
   async function readRows(file, limit) {
@@ -274,7 +585,6 @@
       const limit = parseInt(document.getElementById('limitSelect').value);
       const rows = await readRows(selectedFile, limit);
 
-      // Thu thập metadata cho dashboard export
       ticketMetaMap = {};
       rows.forEach(r => {
         const key = getKey(r);
@@ -285,37 +595,25 @@
       });
 
       let processed = 0;
-
-      // Chia thành các batch, gửi song song tất cả cùng lúc
       const batches = [];
-      for (let i = 0; i < rows.length; i += BATCH_SIZE) {
-        batches.push(rows.slice(i, i + BATCH_SIZE));
-      }
-
+      for (let i = 0; i < rows.length; i += BATCH_SIZE) batches.push(rows.slice(i, i + BATCH_SIZE));
       updateProgress(0, rows.length, batches[0]?.[0] ? getKey(batches[0][0]) : '…', false);
 
       const batchPromises = batches.map(async (batch) => {
-        const batchText = batch.map(r =>
-          `=== TICKET: ${getKey(r)} ===\n${formatTicketText(r)}`
-        ).join('\n\n');
-
+        const batchText = batch.map(r => `=== TICKET: ${getKey(r)} ===\n${formatTicketText(r)}`).join('\n\n');
         const res = await fetch(ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: batchText })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Lỗi server');
-
+        if (!data.success) throw new Error(data.error || 'Server error');
         processed += batch.length;
         updateProgress(processed, rows.length, getKey(batch[batch.length - 1]), processed >= rows.length);
-
         return { batch, serverTickets: data.tickets || [] };
       });
 
       const batchResults = await Promise.all(batchPromises);
-
-      // Merge kết quả theo thứ tự gốc
       const allTickets = [];
       batchResults.forEach(({ batch, serverTickets }) => {
         const resultMap = {};
@@ -325,8 +623,7 @@
           const t = resultMap[key] || serverTickets[idx] || {};
           const meta = ticketMetaMap[key] || {};
           allTickets.push({
-            key,
-            type: getType(r),
+            key, type: getType(r),
             summary: meta.problem || r['Summary'] || r['Description'] || '',
             root_cause: meta.root_cause || t.root_cause || '',
             suggestion: t.suggestion || '—',
@@ -352,47 +649,47 @@
 
   function renderResult(data) {
     const tickets = data.tickets || [];
-    const breach = tickets.filter(t => t.sla_status === 'BREACH').length;
-    const atRisk = tickets.filter(t => t.sla_status === 'AT_RISK').length;
+    const breach   = tickets.filter(t => t.sla_status === 'BREACH').length;
+    const atRisk   = tickets.filter(t => t.sla_status === 'AT_RISK').length;
     const priority = tickets.filter(t => t.priority_action).length;
+    const ok       = tickets.length - breach - atRisk;
 
     document.getElementById('summaryBox').textContent =
-      `Tổng ${tickets.length} tickets — ⚠️ ${breach} SLA Breach — 🔶 ${atRisk} At Risk — 🔥 ${priority} cần ưu tiên`;
+      `${tickets.length} ticket đã phân tích — ⚠️ ${breach} Vi phạm SLA — 🔶 ${atRisk} Có rủi ro — 🔥 ${priority} Cần hành động ưu tiên`;
 
-    document.getElementById('insightsGrid').innerHTML = `
-      <div class="insight-card"><div class="insight-label">Tổng tickets</div><div class="breach-rate" style="color:#1e3a5f">${tickets.length}</div></div>
-      <div class="insight-card"><div class="insight-label">SLA Breach</div><div class="breach-rate">${breach}</div></div>
-      <div class="insight-card"><div class="insight-label">At Risk</div><div class="breach-rate" style="color:#c2410c">${atRisk}</div></div>
-      <div class="insight-card"><div class="insight-label">Cần ưu tiên</div><div class="breach-rate" style="color:#854d0e">${priority}</div></div>`;
+    document.getElementById('insightsGrid').innerHTML =
+      `<div class="insight-card"><div class="insight-label">Tổng ticket</div><div class="insight-val blue">${tickets.length}</div></div>` +
+      `<div class="insight-card"><div class="insight-label">Vi phạm SLA</div><div class="insight-val red">${breach}</div></div>` +
+      `<div class="insight-card"><div class="insight-label">Có rủi ro</div><div class="insight-val amber">${atRisk}</div></div>` +
+      `<div class="insight-card"><div class="insight-label">Hành động ưu tiên</div><div class="insight-val amber">${priority}</div></div>` +
+      `<div class="insight-card"><div class="insight-label">SLA đạt</div><div class="insight-val green">${ok}</div></div>`;
 
-    // Tickets
-    const list = document.getElementById('ticketList');
-    list.innerHTML = (data.tickets||[]).map(t => {
+    document.getElementById('ticketList').innerHTML = tickets.map(t => {
       const cls = t.sla_status === 'BREACH' ? 'breach' : t.sla_status === 'AT_RISK' ? 'at-risk' : 'ok';
       const slaBadge = t.sla_status === 'BREACH'
-        ? '<span class="badge badge-breach">⚠️ SLA Breach</span>'
+        ? '<span class="badge badge-breach">⚠ SLA BREACH</span>'
         : t.sla_status === 'AT_RISK'
-        ? '<span class="badge badge-risk">🔶 At Risk</span>'
-        : '<span class="badge badge-ok">✅ OK</span>';
-      const priBadge = t.priority_action ? '<span class="badge badge-priority">🔥 Ưu tiên</span>' : '';
-      return `
-        <div class="ticket ${cls}">
-          <div class="ticket-header">
-            <span class="ticket-key">${t.key||'—'}</span>
-            <span class="ticket-type">${t.type||'—'}</span>
-            ${slaBadge}${priBadge}
+        ? '<span class="badge badge-risk">◆ CÓ RỦI RO</span>'
+        : '<span class="badge badge-ok">✓ ĐẠT</span>';
+      const priBadge = t.priority_action ? '<span class="badge badge-priority">🔥 ƯU TIÊN</span>' : '';
+      return `<div class="ticket ${cls}">
+        <div class="ticket-header">
+          <span class="ticket-key">${t.key||'—'}</span>
+          <span class="ticket-type">${t.type||'—'}</span>
+          ${slaBadge}${priBadge}
+        </div>
+        <div class="ticket-body">
+          <div style="grid-column:1/-1">
+            <div class="field-label">Khuyến nghị AI cho CSKH</div>
+            <div class="field-value">${t.suggestion||t.error||'—'}</div>
           </div>
-          <div class="ticket-body">
-            <div style="grid-column:1/-1">
-              <div class="field-label">Gợi ý xử lý cho CS</div>
-              <div class="field-value">${t.suggestion||t.error||'—'}</div>
-            </div>
-            ${t.escalate_to ? `<div style="grid-column:1/-1"><div class="field-label">Escalate đến</div><div class="field-value" style="color:#dc2626;font-weight:600">${t.escalate_to}</div></div>` : ''}
-          </div>
-        </div>`;
+          ${t.escalate_to ? `<div style="grid-column:1/-1"><div class="field-label">Escalate đến</div><div class="field-value escalate">${t.escalate_to}</div></div>` : ''}
+        </div>
+      </div>`;
     }).join('');
 
     document.getElementById('resultSection').style.display = 'block';
+    document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function exportDashboard() {
@@ -418,9 +715,9 @@
 
     const rcCount={}, rtCount={}, escCount={};
     data.forEach(t=>{
-      if(t.root_cause)     rcCount[t.root_cause]  = (rcCount[t.root_cause]||0)+1;
-      if(t.request_type)   rtCount[t.request_type]= (rtCount[t.request_type]||0)+1;
-      if(t.escalate)       escCount[t.escalate]   = (escCount[t.escalate]||0)+1;
+      if(t.root_cause)   rcCount[t.root_cause]  =(rcCount[t.root_cause]||0)+1;
+      if(t.request_type) rtCount[t.request_type]=(rtCount[t.request_type]||0)+1;
+      if(t.escalate)     escCount[t.escalate]   =(escCount[t.escalate]||0)+1;
     });
     const rcSorted  = Object.entries(rcCount).sort((a,b)=>b[1]-a[1]);
     const rtSorted  = Object.entries(rtCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
@@ -428,7 +725,7 @@
 
     const htmlOut = `<!DOCTYPE html>
 <html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>ZaloPay Jira Dashboard</title>
+<title>Zalopay Jira Dashboard</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"><\/script>
 <style>
@@ -463,46 +760,46 @@ tr:last-child td{border-bottom:none}tr.breach td{background:#fff5f5}tr.ok:nth-ch
 .escalate-tag{font-size:10px;color:#991b1b;font-weight:600}.prob-text{font-size:11px;color:#475569;line-height:1.5}.sug-text{font-size:11px;color:#334155;line-height:1.5}
 </style></head><body>
 <div class="hdr"><div class="hdr-logo"><i class="ti ti-chart-bar"></i></div>
-  <h1>ZaloPay Jira Analyzer — Production Issue Dashboard</h1>
-  <span class="hdr-date">${dateStr} &nbsp;·&nbsp; ${total} tickets phân tích</span>
+  <h1>Zalopay Jira Analyzer — Bảng điều khiển sự cố</h1>
+  <span class="hdr-date">${dateStr} &nbsp;·&nbsp; ${total} tickets analyzed</span>
 </div>
 <div class="container">
 <div class="metrics">
-  <div class="metric"><div class="metric-label">Tổng tickets</div><div class="metric-val blue">${total}</div><div class="metric-sub">Production Issue batch</div></div>
-  <div class="metric"><div class="metric-label">SLA Breach</div><div class="metric-val red">${breach_n}</div><div class="metric-sub">${Math.round(breach_n/total*100)}% tỷ lệ vi phạm SLA</div></div>
-  <div class="metric"><div class="metric-label">Cần ưu tiên</div><div class="metric-val amber">${prio_n}</div><div class="metric-sub">Breach hoặc Infrastructure/SW</div></div>
-  <div class="metric"><div class="metric-label">SLA OK</div><div class="metric-val green">${ok_n}</div><div class="metric-sub">${Math.round(ok_n/total*100)}% xử lý đúng hạn</div></div>
+  <div class="metric"><div class="metric-label">Tổng ticket</div><div class="metric-val blue">${total}</div><div class="metric-sub">Lô sự cố production</div></div>
+  <div class="metric"><div class="metric-label">Vi phạm SLA</div><div class="metric-val red">${breach_n}</div><div class="metric-sub">${Math.round(breach_n/total*100)}% tỉ lệ vi phạm</div></div>
+  <div class="metric"><div class="metric-label">Hành động ưu tiên</div><div class="metric-val amber">${prio_n}</div><div class="metric-sub">Vi phạm hoặc Hạ tầng/PM</div></div>
+  <div class="metric"><div class="metric-label">SLA đạt</div><div class="metric-val green">${ok_n}</div><div class="metric-sub">${Math.round(ok_n/total*100)}% đúng hạn</div></div>
 </div>
 <div class="charts-grid">
-  <div class="chart-card"><div class="chart-title">Phân bổ SLA status</div>
+  <div class="chart-card"><div class="chart-title">Phân bổ trạng thái SLA</div>
     <div class="legend">
-      <span><span class="legend-dot" style="background:#e24b4a"></span>SLA Breach ${breach_n} (${Math.round(breach_n/total*100)}%)</span>
-      <span><span class="legend-dot" style="background:#639922"></span>SLA OK ${ok_n} (${Math.round(ok_n/total*100)}%)</span>
+      <span><span class="legend-dot" style="background:#e24b4a"></span>Breach ${breach_n} (${Math.round(breach_n/total*100)}%)</span>
+      <span><span class="legend-dot" style="background:#639922"></span>OK ${ok_n} (${Math.round(ok_n/total*100)}%)</span>
     </div>
     <div style="position:relative;height:170px"><canvas id="c1"></canvas></div>
   </div>
-  <div class="chart-card"><div class="chart-title">Root cause phân bổ</div>
+  <div class="chart-card"><div class="chart-title">Phân tích nguyên nhân gốc rễ</div>
     <div style="position:relative;height:200px"><canvas id="c2"></canvas></div>
   </div>
-  <div class="chart-card"><div class="chart-title">Loại vấn đề (Request Type)</div>
+  <div class="chart-card"><div class="chart-title">Phân bổ loại yêu cầu</div>
     <div class="legend" id="leg3"></div>
     <div style="position:relative;height:160px"><canvas id="c3"></canvas></div>
   </div>
-  <div class="chart-card"><div class="chart-title">Tickets cần escalate theo team</div>
+  <div class="chart-card"><div class="chart-title">Escalation theo nhóm</div>
     <div style="position:relative;height:200px"><canvas id="c4"></canvas></div>
   </div>
 </div>
 <div class="filters-bar">
   <label>Lọc SLA:</label>
-  <select id="fSLA" onchange="render()"><option value="ALL">Tất cả</option><option value="BREACH">Breach</option><option value="OK">OK</option></select>
-  <label>Root cause:</label>
+  <select id="fSLA" onchange="render()"><option value="ALL">Tất cả</option><option value="BREACH">Vi phạm</option><option value="OK">Đạt</option></select>
+  <label>Nguyên nhân:</label>
   <select id="fRC" onchange="render()"><option value="ALL">Tất cả</option>${rcSorted.map(([k])=>`<option value="${k}">${k}</option>`).join('')}</select>
   <label>Ưu tiên:</label>
-  <select id="fPri" onchange="render()"><option value="ALL">Tất cả</option><option value="1">Cần ưu tiên</option><option value="0">Bình thường</option></select>
+  <select id="fPri" onchange="render()"><option value="ALL">Tất cả</option><option value="1">Ưu tiên</option><option value="0">Bình thường</option></select>
   <span class="ticket-count" id="cnt"></span>
 </div>
 <div class="table-wrap"><table>
-  <thead><tr><th>Issue Key</th><th>Loại vấn đề</th><th>Vấn đề khách hàng</th><th>Root Cause</th><th>SLA</th><th>Ưu tiên</th><th>Escalate đến</th><th>Gợi ý xử lý CS</th></tr></thead>
+  <thead><tr><th>Mã ticket</th><th>Loại yêu cầu</th><th>Vấn đề khách hàng</th><th>Nguyên nhân</th><th>SLA</th><th>Ưu tiên</th><th>Escalate đến</th><th>Khuyến nghị CSKH</th></tr></thead>
   <tbody id="tbody"></tbody>
 </table></div></div>
 <script>
@@ -518,7 +815,7 @@ function render(){
     if(pr==='0'&&t.priority)return false;
     return true;
   });
-  document.getElementById('cnt').textContent=f.length+' / '+TOTAL+' tickets';
+  document.getElementById('cnt').textContent=f.length+' / '+TOTAL+' ticket';
   document.getElementById('tbody').innerHTML=f.map(t=>{
     const c=RC_COLORS[t.root_cause]||'#aaa',bg=c+'22';
     return \`<tr class="\${t.sla_status==='BREACH'?'breach':'ok'}">
@@ -534,7 +831,7 @@ function render(){
   }).join('');
 }
 render();
-new Chart(document.getElementById('c1'),{type:'doughnut',data:{labels:['SLA Breach','SLA OK'],datasets:[{data:[${breach_n},${ok_n}],backgroundColor:['#e24b4a','#639922'],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:d=>' '+d.label+': '+d.raw+' tickets'}}}}});
+new Chart(document.getElementById('c1'),{type:'doughnut',data:{labels:['Vi phạm SLA','SLA Đạt'],datasets:[{data:[${breach_n},${ok_n}],backgroundColor:['#e24b4a','#639922'],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:d=>' '+d.label+': '+d.raw+' tickets'}}}}});
 new Chart(document.getElementById('c2'),{type:'bar',data:{labels:${JSON.stringify(rcSorted.map(([k])=>k))},datasets:[{data:${JSON.stringify(rcSorted.map(([,v])=>v))},backgroundColor:${JSON.stringify(rcSorted.map((_,i)=>RC_COLORS2[i]||'#888'))},borderWidth:0,borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{stepSize:1,font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}});
 const rtL=${JSON.stringify(rtSorted.map(([k])=>k))},rtD=${JSON.stringify(rtSorted.map(([,v])=>v))},rtC=${JSON.stringify(RT_COLORS.slice(0,rtSorted.length))};
 document.getElementById('leg3').innerHTML=rtL.map((l,i)=>\`<span><span class="legend-dot" style="background:\${rtC[i]}"></span>\${l} \${rtD[i]}</span>\`).join('');
@@ -554,14 +851,9 @@ new Chart(document.getElementById('c4'),{type:'bar',data:{labels:${JSON.stringif
     if (!lastResults.length) return;
     const HEADERS = ['Issue Key','Loại vấn đề','Vấn đề khách hàng','Root Cause','SLA Status','Ưu tiên','Escalate đến','Gợi ý xử lý CS'];
     const rows = lastResults.map(t => [
-      t.key || '',
-      t.type || '',
-      t.summary || '',
-      t.root_cause || '',
-      t.sla_status || 'OK',
-      t.priority_action ? 'Có' : 'Không',
-      t.escalate_to || '',
-      t.suggestion || t.error || ''
+      t.key || '', t.type || '', t.summary || '', t.root_cause || '',
+      t.sla_status || 'OK', t.priority_action ? 'Có' : 'Không',
+      t.escalate_to || '', t.suggestion || t.error || ''
     ]);
     const ws = XLSX.utils.aoa_to_sheet([HEADERS, ...rows]);
     ws['!cols'] = [16,26,42,28,12,10,28,65].map(w => ({ wch: w }));

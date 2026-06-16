@@ -3,447 +3,666 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ZaloPay AI Support</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>AI Hỗ trợ Khách hàng — Zalopay Command Center</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --blue: #0068ff;
-      --blue-dark: #0050cc;
-      --blue-light: #eff6ff;
-      --blue-border: #bdd7ff;
-      --navy: #0d2244;
-      --text: #1a1f36;
-      --text-2: #4f566b;
-      --text-3: #8792a2;
-      --border: #e3e8ef;
-      --bg: #f5f7fa;
-      --white: #ffffff;
-      --green: #0d9f6e;
-      --green-bg: #e6f9f2;
-      --red: #c0392b;
-      --red-bg: #fdecea;
-      --amber: #b45309;
-      --amber-bg: #fffbeb;
-      --radius: 12px;
-      --radius-sm: 8px;
-      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
-      --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05);
+      --cyan:        #00D9FF;
+      --cyan-dim:    rgba(0,217,255,0.12);
+      --cyan-glow:   rgba(0,217,255,0.4);
+      --cyan-border: rgba(0,217,255,0.25);
+      --purple:      #8B5CF6;
+      --purple-dim:  rgba(139,92,246,0.12);
+      --purple-glow: rgba(139,92,246,0.4);
+      --purple-border: rgba(139,92,246,0.25);
+      --accent:      #22D3EE;
+      --green:       #22C55E;
+      --green-dim:   rgba(34,197,94,0.12);
+      --amber:       #F59E0B;
+      --amber-dim:   rgba(245,158,11,0.12);
+      --red:         #EF4444;
+      --red-dim:     rgba(239,68,68,0.12);
+      --bg:          #050816;
+      --bg2:         #0F172A;
+      --bg3:         #111827;
+      --glass:       rgba(15,23,42,0.75);
+      --glass2:      rgba(17,24,39,0.65);
+      --border:      rgba(0,217,255,0.1);
+      --border2:     rgba(255,255,255,0.06);
+      --text:        #FFFFFF;
+      --text2:       #CBD5E1;
+      --text3:       #64748B;
+      --radius:      12px;
+      --radius-sm:   8px;
     }
 
+    html { scroll-behavior: smooth; }
     body {
-      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      font-family: 'Inter', sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
       font-size: 14px;
       line-height: 1.5;
+      overflow-x: hidden;
     }
 
-    /* ── HEADER ── */
+    /* ═══ BACKGROUND ═══ */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(0,217,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,217,255,0.025) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none;
+    }
+    body::after {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background: radial-gradient(ellipse 100% 60% at 50% 0%, rgba(0,217,255,0.04) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .page-wrap { position: relative; z-index: 1; }
+
+    /* ═══ HEADER ═══ */
     header {
-      background: var(--navy);
-      padding: 0 24px;
-      height: 56px;
+      background: rgba(5,8,22,0.92);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 64px;
       display: flex;
       align-items: center;
-      gap: 12px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      gap: 16px;
+      position: sticky; top: 0; z-index: 100;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
     }
-    .header-logo {
-      width: 32px; height: 32px;
-      background: var(--blue);
+    header::before {
+      content: '';
+      position: absolute; left: 0; right: 0; top: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--cyan), var(--purple), transparent);
+    }
+
+    .header-logo-box {
+      width: 38px; height: 38px;
       border-radius: 8px;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
       display: flex; align-items: center; justify-content: center;
-      font-size: 18px; font-weight: 800; color: white;
-      letter-spacing: -1px; flex-shrink: 0;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900; font-size: 18px;
+      color: var(--bg);
+      flex-shrink: 0;
+      box-shadow: 0 0 16px var(--cyan-glow);
     }
-    .header-title { font-size: 15px; font-weight: 700; color: white; }
-    .header-sep { width: 1px; height: 18px; background: rgba(255,255,255,0.2); }
-    .header-sub { font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 400; }
-    .header-pill {
-      margin-left: auto;
+
+    .header-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px; font-weight: 700;
+      letter-spacing: 0.06em; color: var(--text);
+    }
+    .header-sep {
+      width: 1px; height: 18px;
       background: rgba(255,255,255,0.1);
-      color: rgba(255,255,255,0.7);
-      font-size: 11px; font-weight: 500;
-      padding: 4px 10px;
-      border-radius: 20px;
-      border: 1px solid rgba(255,255,255,0.15);
     }
-    .header-pill::before { content: "●"; color: #0d9f6e; margin-right: 5px; font-size: 9px; }
+    .header-sub {
+      font-size: 11px; color: var(--text3);
+      letter-spacing: 0.05em;
+    }
 
-    /* ── LAYOUT ── */
-    .container { max-width: 900px; margin: 0 auto; padding: 28px 20px 48px; }
-
-    /* ── CARD ── */
-    .card {
-      background: var(--white);
-      border-radius: var(--radius);
+    .header-back {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; color: var(--text3);
+      text-decoration: none;
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 0.08em;
+      padding: 6px 12px;
       border: 1px solid var(--border);
-      box-shadow: var(--shadow);
+      border-radius: 6px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .header-back:hover { color: var(--cyan); border-color: var(--cyan-border); }
+
+    .header-status {
+      margin-left: auto;
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 14px;
+      border-radius: 999px;
+      background: rgba(34,197,94,0.08);
+      border: 1px solid rgba(34,197,94,0.25);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px; letter-spacing: 0.1em;
+      color: var(--green);
+    }
+    .status-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.75); } }
+
+    /* ═══ LAYOUT ═══ */
+    .container { max-width: 960px; margin: 0 auto; padding: 32px 20px 60px; }
+
+    /* ═══ PAGE TITLE ═══ */
+    .page-title-wrap {
+      margin-bottom: 28px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    }
+    .page-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 18px; font-weight: 800;
+      letter-spacing: 0.06em;
+      background: linear-gradient(135deg, #fff, var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .page-tag {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px; letter-spacing: 0.2em;
+      padding: 4px 12px;
+      border: 1px solid var(--cyan-border);
+      border-radius: 4px;
+      color: var(--cyan);
+      background: var(--cyan-dim);
+      text-transform: uppercase;
+    }
+
+    /* ═══ GLASS CARD ═══ */
+    .card {
+      background: var(--glass);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       margin-bottom: 16px;
       overflow: hidden;
+      transition: border-color 0.2s;
     }
-    .card-body { padding: 20px 22px; }
+    .card:hover { border-color: var(--border); }
+    .card.cyan-card { border-color: rgba(0,217,255,0.15); }
+    .card.cyan-card:hover { border-color: rgba(0,217,255,0.35); box-shadow: 0 0 30px rgba(0,217,255,0.05); }
+
+    .card-body { padding: 20px 24px; }
     .card-header {
-      padding: 14px 22px;
-      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border2);
       display: flex; align-items: center; justify-content: space-between;
+      background: rgba(255,255,255,0.02);
     }
     .card-title {
-      font-size: 13px; font-weight: 700;
-      color: var(--text);
-      display: flex; align-items: center; gap: 7px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.12em; color: var(--text);
+      display: flex; align-items: center; gap: 8px;
+      text-transform: uppercase;
     }
-    .card-title-icon {
-      width: 22px; height: 22px;
-      border-radius: 6px;
-      background: var(--blue-light);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 12px;
+    .card-title-dot {
+      width: 8px; height: 8px; border-radius: 50%;
     }
+    .card-title-dot.cyan  { background: var(--cyan);   box-shadow: 0 0 6px var(--cyan); }
+    .card-title-dot.purple { background: var(--purple); box-shadow: 0 0 6px var(--purple); }
+    .card-title-dot.green  { background: var(--green);  box-shadow: 0 0 6px var(--green); }
 
-    /* ── SAMPLES ── */
+    /* ═══ SAMPLES ═══ */
     .samples-grid { display: flex; flex-direction: column; gap: 8px; }
     .sample-btn {
-      background: var(--bg);
-      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border2);
       border-radius: var(--radius-sm);
-      padding: 10px 14px;
-      font-size: 13px; font-family: inherit;
-      color: var(--text-2); cursor: pointer;
+      padding: 12px 16px;
+      font-size: 13px; font-family: 'Inter', sans-serif;
+      color: var(--text2); cursor: pointer;
       text-align: left;
-      display: flex; align-items: center; gap: 10px;
-      transition: all 0.15s;
-      font-weight: 500;
+      display: flex; align-items: center; gap: 12px;
+      transition: all 0.2s;
     }
     .sample-btn:hover {
-      background: var(--blue-light);
-      border-color: var(--blue-border);
-      color: var(--blue);
+      background: var(--cyan-dim);
+      border-color: var(--cyan-border);
+      color: var(--cyan);
+      box-shadow: 0 0 16px rgba(0,217,255,0.06);
     }
-    .sample-btn .s-icon {
-      width: 28px; height: 28px; flex-shrink: 0;
+    .s-icon {
+      width: 30px; height: 30px; flex-shrink: 0;
       border-radius: 7px;
-      background: white;
-      border: 1px solid var(--border);
+      background: var(--cyan-dim);
+      border: 1px solid var(--cyan-border);
       display: flex; align-items: center; justify-content: center;
-      font-size: 13px;
+      font-size: 14px;
+    }
+    .sample-meta {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 8px; letter-spacing: 0.15em;
+      color: var(--text3); display: block;
+      text-transform: uppercase; margin-top: 2px;
     }
 
-    /* ── TABS ── */
+    /* ═══ TABS ═══ */
     .tabs {
       display: flex;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--border2);
+      background: rgba(255,255,255,0.01);
     }
     .tab {
-      flex: 1; padding: 13px 0;
+      flex: 1; padding: 14px 0;
       border: none; background: transparent;
-      font-size: 13px; font-weight: 600;
-      color: var(--text-3); cursor: pointer;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+      color: var(--text3); cursor: pointer;
       border-bottom: 2px solid transparent;
-      transition: all 0.15s;
-      font-family: inherit;
+      transition: all 0.2s;
+      text-transform: uppercase;
     }
     .tab.active {
-      color: var(--blue);
-      border-bottom-color: var(--blue);
-      background: transparent;
+      color: var(--cyan);
+      border-bottom-color: var(--cyan);
+      background: var(--cyan-dim);
     }
-    .tab:hover:not(.active) { color: var(--text-2); }
+    .tab:hover:not(.active) { color: var(--text2); }
 
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
-    /* ── FORM ── */
-    .form-group { margin-bottom: 14px; }
+    /* ═══ FORM ═══ */
+    .form-group { margin-bottom: 16px; }
     .form-label {
       display: block;
-      font-size: 12px; font-weight: 600;
-      color: var(--text-2);
-      margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px; font-weight: 700;
+      color: var(--text3); margin-bottom: 8px;
+      text-transform: uppercase; letter-spacing: 0.15em;
     }
-    .form-label .optional {
-      font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--text-3);
-    }
+    .form-label .optional { font-family: 'Inter', sans-serif; font-size: 10px; text-transform: none; letter-spacing: 0; }
+
     textarea {
       width: 100%;
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border2);
       border-radius: var(--radius-sm);
-      padding: 10px 13px;
-      font-size: 13.5px; font-family: inherit;
-      color: var(--text); line-height: 1.6;
+      padding: 12px 14px;
+      font-size: 13.5px; font-family: 'Inter', sans-serif;
+      color: var(--text); line-height: 1.7;
       resize: vertical; transition: border-color 0.2s, box-shadow 0.2s;
-      background: var(--white);
+      background: rgba(255,255,255,0.03);
     }
-    textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,104,255,0.1); }
-    textarea { min-height: 90px; }
+    textarea::placeholder { color: var(--text3); }
+    textarea:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(0,217,255,0.08), 0 0 20px rgba(0,217,255,0.06); }
+    textarea { min-height: 96px; }
 
     select {
-      padding: 8px 12px;
-      border: 1.5px solid var(--border);
+      padding: 9px 12px;
+      border: 1px solid var(--border2);
       border-radius: var(--radius-sm);
-      font-size: 13px; font-family: inherit;
-      color: var(--text); background: white;
-      cursor: pointer;
+      font-size: 13px; font-family: 'Inter', sans-serif;
+      color: var(--text); background: var(--bg2);
+      cursor: pointer; outline: none;
     }
-    select:focus { outline: none; border-color: var(--blue); }
+    select:focus { border-color: var(--cyan); }
 
-    /* ── BUTTONS ── */
+    /* ═══ BUTTONS ═══ */
     .btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-      background: var(--blue); color: white; border: none;
-      border-radius: var(--radius-sm); padding: 11px 20px;
-      font-size: 13.5px; font-weight: 600; font-family: inherit;
-      cursor: pointer; transition: all 0.18s;
-      white-space: nowrap;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      border: none; border-radius: var(--radius-sm);
+      padding: 12px 22px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      cursor: pointer; transition: all 0.2s;
+      white-space: nowrap; text-transform: uppercase;
     }
-    .btn:hover:not(:disabled) { background: var(--blue-dark); box-shadow: 0 2px 8px rgba(0,104,255,0.3); }
-    .btn:active:not(:disabled) { transform: translateY(1px); }
-    .btn:disabled { background: #c7d2de; color: #8fa3b4; cursor: not-allowed; }
-    .btn-full { width: 100%; }
-    .btn-sm { padding: 7px 14px; font-size: 12px; }
-    .btn-green { background: var(--green); }
-    .btn-green:hover:not(:disabled) { background: #0a8a5f; box-shadow: 0 2px 8px rgba(13,159,110,0.3); }
-    .btn-outline {
-      background: transparent; color: var(--blue);
-      border: 1.5px solid var(--blue-border);
+    .btn-primary {
+      background: linear-gradient(135deg, var(--cyan), var(--accent));
+      color: var(--bg);
+      box-shadow: 0 0 20px rgba(0,217,255,0.2);
     }
-    .btn-outline:hover:not(:disabled) { background: var(--blue-light); box-shadow: none; }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 0 32px rgba(0,217,255,0.4), 0 4px 16px rgba(0,0,0,0.4); }
+    .btn-primary:disabled { background: var(--bg2); color: var(--text3); cursor: not-allowed; box-shadow: none; }
 
-    /* ── UPLOAD ZONE ── */
+    .btn-full { width: 100%; }
+    .btn-sm { padding: 7px 14px; font-size: 10px; }
+
+    .btn-green {
+      background: linear-gradient(135deg, #059669, var(--green));
+      color: #fff;
+      box-shadow: 0 0 16px rgba(34,197,94,0.2);
+    }
+    .btn-green:hover:not(:disabled) { box-shadow: 0 0 28px rgba(34,197,94,0.35); transform: translateY(-1px); }
+
+    .btn-outline {
+      background: transparent; color: var(--cyan);
+      border: 1px solid var(--cyan-border);
+    }
+    .btn-outline:hover { background: var(--cyan-dim); box-shadow: 0 0 16px rgba(0,217,255,0.1); }
+
+    /* ═══ UPLOAD ZONE ═══ */
     .upload-zone {
-      border: 2px dashed var(--border);
+      border: 1px dashed rgba(0,217,255,0.25);
       border-radius: var(--radius);
-      padding: 28px 20px; text-align: center; cursor: pointer;
-      transition: all 0.2s; color: var(--text-3);
-      background: var(--bg);
+      padding: 32px 20px; text-align: center; cursor: pointer;
+      transition: all 0.2s; color: var(--text3);
+      background: rgba(0,217,255,0.02);
     }
     .upload-zone:hover, .upload-zone.dragover {
-      border-color: var(--blue); background: var(--blue-light); color: var(--blue);
+      border-color: var(--cyan);
+      background: var(--cyan-dim);
+      color: var(--cyan);
+      box-shadow: 0 0 24px rgba(0,217,255,0.06);
     }
-    .upload-zone .upload-icon { font-size: 32px; margin-bottom: 10px; }
-    .upload-zone .upload-hint { font-size: 13px; font-weight: 500; }
-    .upload-zone .upload-sub { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+    .upload-icon { font-size: 32px; margin-bottom: 10px; }
+    .upload-hint { font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; }
+    .upload-sub { font-size: 11px; color: var(--text3); margin-top: 6px; }
     .upload-zone input { display: none; }
-    .file-selected { margin-top: 8px; color: var(--green); font-weight: 600; font-size: 12px; }
+    .file-selected { margin-top: 10px; color: var(--green); font-weight: 600; font-size: 12px; }
 
-    /* ── PROGRESS ── */
+    /* ═══ PROGRESS ═══ */
     .progress-wrap { margin: 16px 0; }
     .progress-track {
-      height: 6px; background: var(--border); border-radius: 99px; overflow: hidden;
+      height: 4px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden;
+      border: 1px solid var(--border);
     }
     .progress-fill {
-      height: 100%; background: linear-gradient(90deg, var(--blue), #38a0ff);
+      height: 100%;
+      background: linear-gradient(90deg, var(--cyan), var(--accent), var(--purple));
       border-radius: 99px; transition: width 0.4s ease; width: 0%;
+      box-shadow: 0 0 8px var(--cyan);
     }
     .progress-meta {
       display: flex; justify-content: space-between;
-      font-size: 11px; color: var(--text-3); margin-top: 6px;
+      font-size: 11px; color: var(--text3); margin-top: 8px;
     }
 
-    /* ── SPINNER ── */
+    /* ═══ SPINNER ═══ */
     @keyframes spin { to { transform: rotate(360deg); } }
     .spinner {
-      display: inline-block; width: 13px; height: 13px;
-      border: 2px solid var(--blue-border); border-top-color: var(--blue);
+      display: inline-block; width: 14px; height: 14px;
+      border: 2px solid rgba(0,217,255,0.2); border-top-color: var(--cyan);
       border-radius: 50%; animation: spin 0.7s linear infinite;
       vertical-align: middle; flex-shrink: 0;
     }
+
     .processing-state {
+      display: flex; align-items: center; gap: 12px;
+      padding: 20px 24px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+      color: var(--cyan); text-transform: uppercase;
+    }
+    .processing-state-steps {
+      display: flex; flex-direction: column; gap: 4px; padding: 16px 24px 20px;
+    }
+    .ps-step {
       display: flex; align-items: center; gap: 10px;
-      padding: 18px 22px; color: var(--text-2); font-size: 13px; font-weight: 500;
+      font-size: 11px; color: var(--text3);
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 0.08em;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border2);
     }
-    .processing-dots::after {
-      content: ''; animation: dots 1.4s steps(3, end) infinite;
+    .ps-step:last-child { border-bottom: none; }
+    .ps-step.active { color: var(--cyan); }
+    .ps-step.done   { color: var(--green); }
+    .ps-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+      background: var(--bg3); border: 1px solid var(--border2);
     }
+    .ps-step.active .ps-dot { background: var(--cyan); border-color: var(--cyan); box-shadow: 0 0 8px var(--cyan); animation: pulse 1s ease-in-out infinite; }
+    .ps-step.done   .ps-dot { background: var(--green); border-color: var(--green); }
+
     @keyframes dots {
       0%   { content: '.'; }
       33%  { content: '..'; }
       66%  { content: '...'; }
       100% { content: ''; }
     }
+    .processing-dots::after { content: ''; animation: dots 1.4s steps(3, end) infinite; }
 
-    /* ── RESULT SINGLE ── */
-    .result-section { margin-bottom: 18px; }
+    /* ═══ RESULT ═══ */
+    .result-section { margin-bottom: 20px; }
     .result-section:last-child { margin-bottom: 0; }
     .result-section-label {
-      font-size: 10px; font-weight: 700;
-      color: var(--text-3); text-transform: uppercase; letter-spacing: 0.6px;
-      margin-bottom: 8px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px; font-weight: 700;
+      color: var(--text3); text-transform: uppercase; letter-spacing: 0.2em;
+      margin-bottom: 10px;
+      display: flex; align-items: center; gap: 8px;
     }
+    .result-section-label::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(90deg, var(--border2), transparent);
+    }
+
     .tags { display: flex; flex-wrap: wrap; gap: 6px; }
     .tag {
-      background: var(--blue-light);
-      border: 1px solid var(--blue-border);
-      border-radius: 20px; padding: 3px 11px;
-      font-size: 12px; color: var(--blue); font-weight: 600;
+      background: var(--cyan-dim);
+      border: 1px solid var(--cyan-border);
+      border-radius: 6px; padding: 4px 12px;
+      font-size: 12px; color: var(--cyan); font-weight: 600;
     }
-    .tag-neutral { background: #f1f3f5; border-color: var(--border); color: var(--text-2); }
-    .tag-green { background: var(--green-bg); border-color: #a7f3d0; color: var(--green); }
-    .tag-red { background: var(--red-bg); border-color: #fca5a5; color: var(--red); }
-    .tag-amber { background: var(--amber-bg); border-color: #fcd34d; color: var(--amber); }
+    .tag-neutral { background: rgba(255,255,255,0.04); border-color: var(--border2); color: var(--text2); }
+    .tag-green  { background: var(--green-dim); border-color: rgba(34,197,94,0.3); color: var(--green); }
+    .tag-red    { background: var(--red-dim);   border-color: rgba(239,68,68,0.3); color: var(--red); }
+    .tag-amber  { background: var(--amber-dim); border-color: rgba(245,158,11,0.3); color: var(--amber); }
 
     .response-box {
-      background: var(--bg);
-      border: 1.5px solid var(--border);
-      border-left: 3px solid var(--blue);
+      background: rgba(0,217,255,0.03);
+      border: 1px solid rgba(0,217,255,0.15);
+      border-left: 3px solid var(--cyan);
       border-radius: var(--radius-sm);
-      padding: 14px 16px;
-      font-size: 13.5px; line-height: 1.8;
-      color: var(--text); white-space: pre-wrap;
+      padding: 16px 18px;
+      font-size: 13.5px; line-height: 1.85;
+      color: var(--text2); white-space: pre-wrap;
     }
 
     .alert-banner {
       display: flex; align-items: flex-start; gap: 10px;
-      background: var(--amber-bg);
-      border: 1px solid #fcd34d;
+      background: var(--amber-dim);
+      border: 1px solid rgba(245,158,11,0.35);
       border-radius: var(--radius-sm);
-      padding: 11px 14px; margin-bottom: 16px;
+      padding: 12px 16px; margin-bottom: 16px;
       font-size: 12.5px; color: var(--amber);
     }
     .alert-banner strong { font-weight: 700; }
 
-    /* ── STATS ── */
-    .stat-row { display: flex; gap: 10px; margin-bottom: 18px; }
+    /* ═══ STATS ═══ */
+    .stat-row { display: flex; gap: 12px; margin-bottom: 20px; }
     .stat {
-      flex: 1; background: var(--bg); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 14px 16px; text-align: center;
+      flex: 1;
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border2);
+      border-radius: var(--radius-sm); padding: 16px; text-align: center;
     }
-    .stat-val { font-size: 28px; font-weight: 700; line-height: 1; }
-    .stat-label { font-size: 11px; color: var(--text-3); margin-top: 4px; font-weight: 500; }
+    .stat-val {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 28px; font-weight: 800; line-height: 1;
+    }
+    .stat-label { font-size: 10px; color: var(--text3); margin-top: 6px; letter-spacing: 0.05em; }
 
-    /* ── TABLE ── */
-    .table-wrap { overflow-x: auto; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+    /* ═══ TABLE ═══ */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border2);
+    }
     .batch-table { width: 100%; border-collapse: collapse; font-size: 12px; }
     .batch-table th {
-      background: #f8f9fb; color: var(--text-2);
-      padding: 10px 13px; text-align: left;
-      font-size: 11px; font-weight: 700;
-      letter-spacing: 0.3px; border-bottom: 1px solid var(--border);
-      white-space: nowrap;
+      background: rgba(0,217,255,0.04);
+      color: var(--text3);
+      padding: 10px 14px; text-align: left;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.12em; border-bottom: 1px solid var(--border2);
+      white-space: nowrap; text-transform: uppercase;
     }
     .batch-table td {
-      padding: 10px 13px; border-bottom: 1px solid #f1f3f6;
-      vertical-align: top; line-height: 1.5;
+      padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.03);
+      vertical-align: top; line-height: 1.5; color: var(--text2);
     }
     .batch-table tr:last-child td { border-bottom: none; }
-    .batch-table tr:hover td { background: #fafbff; }
+    .batch-table tr:hover td { background: rgba(0,217,255,0.02); }
+
     .key-chip {
-      font-weight: 700; color: var(--blue); font-size: 11px;
-      background: var(--blue-light); padding: 2px 8px; border-radius: 5px;
-      white-space: nowrap;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700; color: var(--cyan); font-size: 10px;
+      background: var(--cyan-dim); padding: 3px 9px;
+      border-radius: 4px; white-space: nowrap;
+      border: 1px solid var(--cyan-border);
     }
     .badge {
-      display: inline-block; padding: 2px 9px; border-radius: 20px;
-      font-size: 10px; font-weight: 700; white-space: nowrap;
+      display: inline-block; padding: 2px 9px; border-radius: 4px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px; font-weight: 700; letter-spacing: 0.08em; white-space: nowrap;
     }
-    .badge-ok { background: var(--green-bg); color: var(--green); }
-    .badge-err { background: var(--red-bg); color: var(--red); }
+    .badge-ok  { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+    .badge-err { background: var(--red-dim);   color: var(--red);   border: 1px solid rgba(239,68,68,0.3); }
 
-    .response-preview { max-height: 72px; overflow: hidden; color: var(--text-2); font-size: 11.5px; line-height: 1.55; }
+    .response-preview { max-height: 72px; overflow: hidden; color: var(--text2); font-size: 11.5px; line-height: 1.6; }
     .response-preview.expanded { max-height: none; }
     .expand-btn {
-      background: none; border: none; color: var(--blue); font-size: 11px;
+      background: none; border: none; color: var(--cyan); font-size: 11px;
       cursor: pointer; padding: 2px 0; font-weight: 600; font-family: inherit;
     }
 
-    /* ── ERROR ── */
+    /* ═══ ERROR ═══ */
     .error-box {
       display: flex; align-items: flex-start; gap: 10px;
-      background: var(--red-bg); border: 1px solid #fca5a5;
-      border-radius: var(--radius-sm); padding: 12px 16px;
+      background: var(--red-dim); border: 1px solid rgba(239,68,68,0.35);
+      border-radius: var(--radius-sm); padding: 14px 16px;
       color: var(--red); font-size: 13px;
     }
 
-    .endpoint-note { font-size: 11px; color: var(--text-3); text-align: center; margin-top: 8px; }
-    .divider { height: 1px; background: var(--border); margin: 16px 0; }
+    /* ═══ MISC ═══ */
+    .endpoint-note { font-size: 11px; color: var(--text3); text-align: center; margin-top: 10px; font-family: 'Orbitron', sans-serif; letter-spacing: 0.08em; }
+    .divider { height: 1px; background: var(--border2); margin: 18px 0; }
     .info-hint {
-      display: flex; align-items: flex-start; gap: 9px;
-      background: var(--blue-light); border-radius: var(--radius-sm);
-      padding: 10px 13px; font-size: 12px; color: #2563eb;
-      margin-bottom: 14px;
+      display: flex; align-items: flex-start; gap: 10px;
+      background: var(--cyan-dim); border-radius: var(--radius-sm);
+      border: 1px solid var(--cyan-border);
+      padding: 12px 14px; font-size: 12px; color: var(--cyan);
+      margin-bottom: 16px;
     }
     .batch-controls {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px 0 4px;
+      display: flex; align-items: center; gap: 12px; padding: 12px 0 4px;
     }
-    .batch-controls label { font-size: 12px; color: var(--text-2); font-weight: 600; white-space: nowrap; }
+    .batch-controls label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px; color: var(--text3); font-weight: 700; letter-spacing: 0.1em; white-space: nowrap;
+    }
+
+    /* Analysis report grid */
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .report-cell {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+    }
+    .report-cell-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 8px; letter-spacing: 0.2em; color: var(--text3);
+      text-transform: uppercase; margin-bottom: 8px;
+    }
+    .report-cell-val { font-size: 13px; font-weight: 600; color: var(--text); }
   </style>
 </head>
 <body>
+<div class="page-wrap">
 
+<!-- HEADER -->
 <header>
-  <div class="header-logo">Z</div>
-  <span class="header-title">ZaloPay AI Support</span>
+  <div class="header-logo-box">Z</div>
+  <span class="header-title">AI Hỗ trợ Khách hàng</span>
   <div class="header-sep"></div>
-  <span class="header-sub">Hệ thống Phản hồi Tự động</span>
-  <div class="header-pill">AI Agent · Live</div>
+  <span class="header-sub">Zalopay CSKH Intelligence</span>
+  <a href="index.html" class="header-back">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    TRANG CHỦ
+  </a>
+  <div class="header-status">
+    <div class="status-dot"></div>
+    AI AGENT · HOẠT ĐỘNG
+  </div>
 </header>
 
 <div class="container">
 
-  <!-- Ticket mẫu -->
-  <div class="card">
+  <div class="page-title-wrap">
+    <h1 class="page-title">TIẾP NHẬN YÊU CẦU KHÁCH HÀNG</h1>
+    <span class="page-tag">Pipeline một lần gọi</span>
+  </div>
+
+  <!-- SAMPLE TICKETS -->
+  <div class="card cyan-card">
     <div class="card-header">
-      <div class="card-title">
-        <div class="card-title-icon">🎯</div>
-        Ticket mẫu
-      </div>
+      <div class="card-title"><div class="card-title-dot cyan"></div>Kịch bản mẫu có sẵn</div>
     </div>
     <div class="card-body">
       <div class="samples-grid">
         <button class="sample-btn" onclick="fillSample(0)">
           <span class="s-icon">📱</span>
-          Mua data Viettel thành công nhưng chưa nhận được
+          <div>
+            Mua data Viettel thành công nhưng chưa nhận được
+            <span class="sample-meta">TELCO · DATA_SUCCESS_NO_SERVICE</span>
+          </div>
         </button>
         <button class="sample-btn" onclick="fillSample(1)">
           <span class="s-icon">💸</span>
-          Chuyển tiền nhầm số tài khoản
+          <div>
+            Chuyển tiền nhầm số tài khoản
+            <span class="sample-meta">BANKING · WRONG_TRANSFER</span>
+          </div>
         </button>
         <button class="sample-btn" onclick="fillSample(2)">
           <span class="s-icon">🔐</span>
-          Không xác thực được eKYC bằng CCCD chip
+          <div>
+            Không xác thực được eKYC bằng CCCD chip
+            <span class="sample-meta">WALLET · EKYC_FAILURE</span>
+          </div>
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Tabs -->
+  <!-- INPUT TABS -->
   <div class="card" style="overflow:hidden">
     <div class="tabs">
-      <button class="tab active" id="tab-single" onclick="switchTab('single')">✍️&nbsp; Nhập ticket thủ công</button>
-      <button class="tab" id="tab-batch" onclick="switchTab('batch')">📂&nbsp; Xử lý hàng loạt từ Excel</button>
+      <button class="tab active" id="tab-single" onclick="switchTab('single')">⌨&nbsp; Nhập thủ công</button>
+      <button class="tab" id="tab-batch" onclick="switchTab('batch')">📂&nbsp; Xử lý hàng loạt Excel</button>
     </div>
 
-    <!-- TAB: Nhập tay -->
+    <!-- TAB: Single -->
     <div class="tab-panel active card-body" id="panel-single">
       <div class="form-group">
         <label class="form-label">Nội dung ticket</label>
         <textarea id="ticket" placeholder="Nhập nội dung khiếu nại hoặc yêu cầu của khách hàng..."></textarea>
       </div>
       <div class="form-group" style="margin-bottom:0">
-        <label class="form-label">Kết quả kiểm tra hệ thống <span class="optional">(không bắt buộc)</span></label>
-        <textarea id="check_result" rows="2" style="min-height:56px" placeholder="Kết quả tra cứu từ hệ thống, nhà mạng, ngân hàng..."></textarea>
+        <label class="form-label">Kết quả kiểm tra hệ thống <span class="optional">(tùy chọn)</span></label>
+        <textarea id="check_result" rows="2" style="min-height:60px" placeholder="Kết quả tra cứu từ hệ thống, nhà mạng, ngân hàng..."></textarea>
       </div>
-      <div style="margin-top:14px">
-        <button class="btn btn-full" id="submitBtn" onclick="submitTicket()">
-          <span>🚀</span> Xử lý ticket
+      <div style="margin-top:16px">
+        <button class="btn btn-primary btn-full" id="submitBtn" onclick="submitTicket()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          XỬ LÝ TICKET
         </button>
         <p class="endpoint-note" id="endpointNote"></p>
       </div>
     </div>
 
-    <!-- TAB: Batch Excel -->
+    <!-- TAB: Batch -->
     <div class="tab-panel card-body" id="panel-batch">
       <div class="info-hint">
-        💡 Upload file Excel xuất từ <strong>&nbsp;Jira Ticket Analyzer</strong>&nbsp;. AI sẽ tự động đọc từng dòng và soạn phản hồi chuẩn ZaloPay.
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Tải lên file Excel từ <strong>&nbsp;Jira Ticket Analyzer</strong>. AI đọc từng dòng và soạn phản hồi chuẩn Zalopay tự động.
       </div>
 
       <div class="upload-zone" id="batchUploadZone"
@@ -453,58 +672,68 @@
         ondrop="handleBatchDrop(event)">
         <input type="file" id="batchFileInput" accept=".xlsx,.xls" onchange="handleBatchFile(this.files[0])">
         <div class="upload-icon">📊</div>
-        <div class="upload-hint">Kéo thả hoặc nhấn để chọn file Excel</div>
+        <div class="upload-hint">Kéo thả hoặc nhấp để chọn file</div>
         <div class="upload-sub">Hỗ trợ .xlsx, .xls · Xuất từ Jira Analyzer</div>
         <div class="file-selected" id="batchFileName"></div>
       </div>
 
       <div class="batch-controls">
-        <label>Số lượng xử lý:</label>
+        <label>GIỚI HẠN XỬ LÝ:</label>
         <select id="batchLimit">
-          <option value="5">5 tickets</option>
-          <option value="10" selected>10 tickets</option>
-          <option value="20">20 tickets</option>
-          <option value="50">50 tickets</option>
+          <option value="5">5 ticket</option>
+          <option value="10" selected>10 ticket</option>
+          <option value="20">20 ticket</option>
+          <option value="50">50 ticket</option>
           <option value="999">Tất cả</option>
         </select>
       </div>
 
-      <!-- Progress -->
       <div class="progress-wrap" id="batchProgress" style="display:none">
         <div class="progress-track"><div class="progress-fill" id="batchFill"></div></div>
         <div class="progress-meta">
           <span id="batchProgressLabel" style="display:flex;align-items:center;gap:6px">
-            <span class="spinner"></span><span>Đang chuẩn bị<span class="processing-dots"></span></span>
+            <span class="spinner"></span><span>Đang khởi tạo<span class="processing-dots"></span></span>
           </span>
           <span id="batchProgressCount">0 / 0</span>
         </div>
       </div>
 
-      <button class="btn btn-full" id="batchBtn" onclick="runBatch()" style="margin-top:12px">
-        <span>⚡</span> Xử lý hàng loạt
+      <button class="btn btn-primary btn-full" id="batchBtn" onclick="runBatch()" style="margin-top:14px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        THỰC THI HÀNG LOẠT
       </button>
       <p class="endpoint-note">Endpoint: /api/pipeline</p>
     </div>
   </div>
 
-  <!-- Spinner nhập tay -->
+  <!-- PROCESSING STATE -->
   <div id="singleSpinner" style="display:none">
-    <div class="card">
+    <div class="card cyan-card">
       <div class="processing-state">
         <span class="spinner"></span>
-        <span>Đang phân tích và soạn phản hồi<span class="processing-dots"></span></span>
+        AI PIPELINE ĐANG XỬ LÝ<span class="processing-dots"></span>
+      </div>
+      <div class="processing-state-steps" id="processingSteps">
+        <div class="ps-step active" id="ps1"><div class="ps-dot"></div>ĐANG QUÉT DỮ LIỆU</div>
+        <div class="ps-step" id="ps2"><div class="ps-dot"></div>ĐANG PHÂN LOẠI TICKET</div>
+        <div class="ps-step" id="ps3"><div class="ps-dot"></div>ĐANG CHẨN ĐOÁN NGUYÊN NHÂN</div>
+        <div class="ps-step" id="ps4"><div class="ps-dot"></div>ĐANG SOẠN PHẢN HỒI</div>
       </div>
     </div>
   </div>
 
-  <!-- Kết quả nhập tay -->
+  <!-- AI ANALYSIS REPORT -->
   <div class="card" id="resultCard" style="display:none">
     <div class="card-header">
-      <div class="card-title"><div class="card-title-icon">📋</div>Kết quả phân tích</div>
+      <div class="card-title">
+        <div class="card-title-dot cyan"></div>
+        Kết quả phân tích AI
+      </div>
+      <span class="page-tag">Hoàn tất</span>
     </div>
     <div class="card-body">
       <div class="result-section">
-        <div class="result-section-label">Phân loại ticket</div>
+        <div class="result-section-label">Phân loại</div>
         <div class="tags" id="tags"></div>
       </div>
       <div class="divider"></div>
@@ -514,17 +743,20 @@
       </div>
       <div class="divider"></div>
       <div class="result-section">
-        <div class="result-section-label">Phản hồi chuẩn ZaloPay</div>
+        <div class="result-section-label">Phản hồi khách hàng do AI soạn</div>
         <div class="response-box" id="finalResponse"></div>
       </div>
     </div>
   </div>
 
-  <!-- Kết quả batch -->
+  <!-- BATCH RESULTS -->
   <div class="card" id="batchResultCard" style="display:none">
     <div class="card-header">
-      <div class="card-title"><div class="card-title-icon">📊</div>Kết quả xử lý hàng loạt</div>
-      <button class="btn btn-green btn-sm" onclick="exportBatchExcel()">📥 Xuất Excel</button>
+      <div class="card-title"><div class="card-title-dot purple"></div>Báo cáo xử lý hàng loạt</div>
+      <button class="btn btn-green btn-sm" onclick="exportBatchExcel()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        XUẤT EXCEL
+      </button>
     </div>
     <div class="card-body">
       <div class="stat-row" id="batchStats"></div>
@@ -532,12 +764,12 @@
         <table class="batch-table" id="batchTable">
           <thead>
             <tr>
-              <th style="width:9%">Issue Key</th>
-              <th style="width:13%">Loại vấn đề</th>
-              <th style="width:13%">Root Cause</th>
+              <th style="width:9%">Mã ticket</th>
+              <th style="width:13%">Danh mục</th>
+              <th style="width:13%">Nguyên nhân</th>
               <th style="width:7%">SLA</th>
               <th style="width:9%">Escalate</th>
-              <th>Phản hồi ZaloPay</th>
+              <th>Phản hồi Zalopay</th>
             </tr>
           </thead>
           <tbody id="batchTbody"></tbody>
@@ -546,17 +778,18 @@
     </div>
   </div>
 
-  <!-- Lỗi -->
+  <!-- ERROR -->
   <div class="card" id="errorCard" style="display:none">
     <div class="card-body">
       <div class="error-box">
-        <span>⚠️</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         <span id="errorMsg"></span>
       </div>
     </div>
   </div>
 
 </div>
+</div><!-- /page-wrap -->
 
 <script>
   const ENDPOINT = '/api/pipeline';
@@ -572,11 +805,11 @@
     }).catch(function() {});
   });
 
-  // ── SAMPLES ─────────────────────────────────────────────────────────────────
+  // ── SAMPLES ────────────────────────────────────────────────
   const samples = [
-    { ticket: 'Tôi đã mua gói data 4G Viettel 3GB qua ZaloPay lúc 9h sáng, tiền đã bị trừ nhưng đến giờ vẫn chưa nhận được data. SĐT 0912345678, giao dịch GD20260613001.', check_result: 'Nhà mạng Viettel xác nhận đã cấp data thành công lúc 9h05, hiện tại gói đang active.' },
-    { ticket: 'Tôi vừa chuyển 500,000đ qua ZaloPay nhưng chuyển nhầm sang số tài khoản 0123456789 thay vì 0987654321. Giao dịch GD20260613002.', check_result: 'Giao dịch thành công, tiền đã vào tài khoản đích. Ngân hàng yêu cầu chủ tài khoản nhận liên hệ trực tiếp để hoàn trả.' },
-    { ticket: 'Tôi đang cố xác thực tài khoản ZaloPay bằng CCCD gắn chip nhưng ứng dụng báo không đọc được chip. Đã thử nhiều lần vẫn thất bại.', check_result: '' }
+    { ticket: 'Tôi đã mua gói data 4G Viettel 3GB qua Zalopay lúc 9h sáng, tiền đã bị trừ nhưng đến giờ vẫn chưa nhận được data. SĐT 0912345678, giao dịch GD20260613001.', check_result: 'Nhà mạng Viettel xác nhận đã cấp data thành công lúc 9h05, hiện tại gói đang active.' },
+    { ticket: 'Tôi vừa chuyển 500,000đ qua Zalopay nhưng chuyển nhầm sang số tài khoản 0123456789 thay vì 0987654321. Giao dịch GD20260613002.', check_result: 'Giao dịch thành công, tiền đã vào tài khoản đích. Ngân hàng yêu cầu chủ tài khoản nhận liên hệ trực tiếp để hoàn trả.' },
+    { ticket: 'Tôi đang cố xác thực tài khoản Zalopay bằng CCCD gắn chip nhưng ứng dụng báo không đọc được chip. Đã thử nhiều lần vẫn thất bại.', check_result: '' }
   ];
 
   function fillSample(i) {
@@ -585,7 +818,7 @@
     document.getElementById('check_result').value = samples[i].check_result;
   }
 
-  // ── TABS ─────────────────────────────────────────────────────────────────────
+  // ── TABS ───────────────────────────────────────────────────
   function switchTab(tab) {
     ['single','batch'].forEach(function(t) {
       document.getElementById('tab-' + t).classList.toggle('active', t === tab);
@@ -593,7 +826,31 @@
     });
   }
 
-  // ── SINGLE TICKET ────────────────────────────────────────────────────────────
+  // ── PROCESSING ANIMATION ───────────────────────────────────
+  let psTimer = null;
+  function startProcessingAnim() {
+    const steps = ['ps1','ps2','ps3','ps4'];
+    let cur = 0;
+    steps.forEach(function(id) {
+      document.getElementById(id).className = 'ps-step';
+    });
+    document.getElementById('ps1').className = 'ps-step active';
+    psTimer = setInterval(function() {
+      if (cur < steps.length - 1) {
+        document.getElementById(steps[cur]).className = 'ps-step done';
+        cur++;
+        document.getElementById(steps[cur]).className = 'ps-step active';
+      }
+    }, 800);
+  }
+  function stopProcessingAnim() {
+    if (psTimer) { clearInterval(psTimer); psTimer = null; }
+    ['ps1','ps2','ps3','ps4'].forEach(function(id) {
+      document.getElementById(id).className = 'ps-step done';
+    });
+  }
+
+  // ── SINGLE TICKET ──────────────────────────────────────────
   async function submitTicket() {
     const ticket = document.getElementById('ticket').value.trim();
     if (!ticket) { alert('Vui lòng nhập nội dung ticket.'); return; }
@@ -603,17 +860,20 @@
     document.getElementById('singleSpinner').style.display = 'block';
     document.getElementById('resultCard').style.display = 'none';
     document.getElementById('errorCard').style.display = 'none';
+    startProcessingAnim();
 
     try {
       const data = await callPipeline(ticket, document.getElementById('check_result').value.trim());
+      stopProcessingAnim();
       renderSingleResult(data);
       document.getElementById('resultCard').style.display = 'block';
       document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch(err) {
+      stopProcessingAnim();
       showError(err.message);
     } finally {
       btn.disabled = false;
-      document.getElementById('singleSpinner').style.display = 'none';
+      setTimeout(function() { document.getElementById('singleSpinner').style.display = 'none'; }, 400);
     }
   }
 
@@ -636,9 +896,9 @@
     document.getElementById('analysis').innerHTML = [
       a.root_cause   ? '<span class="tag tag-neutral">📌 ' + escHtml(a.root_cause) + '</span>' : null,
       a.refund_allowed !== undefined
-        ? (a.refund_allowed ? '<span class="tag tag-green">✅ Được hoàn tiền</span>' : '<span class="tag tag-red">✗ Không hoàn tiền</span>')
+        ? (a.refund_allowed ? '<span class="tag tag-green">✅ Cho phép hoàn tiền</span>' : '<span class="tag tag-red">✗ Không hoàn tiền</span>')
         : null,
-      a.escalate ? '<span class="tag tag-amber">🔺 Cần escalate</span>' : null
+      a.escalate ? '<span class="tag tag-amber">🔺 Cần escalation</span>' : null
     ].filter(Boolean).join('');
 
     const reviewEl = document.getElementById('humanReviewBanner');
@@ -647,16 +907,16 @@
       const banner = document.createElement('div');
       banner.id = 'humanReviewBanner';
       banner.className = 'alert-banner';
-      banner.innerHTML = '<span>⚠️</span><span><strong>Cần xem xét thủ công:</strong> Nội dung mơ hồ, AI xử lý ở mức tin cậy thấp. Đề nghị CS kiểm tra trước khi gửi khách hàng.</span>';
+      banner.innerHTML = '<span>⚠️</span><span><strong>Cần kiểm tra thủ công:</strong> Độ tin cậy thấp. Vui lòng xác nhận trước khi gửi cho khách hàng.</span>';
       document.getElementById('resultCard').querySelector('.card-body').insertBefore(
         banner,
         document.getElementById('resultCard').querySelector('.card-body').firstChild
       );
     }
-    document.getElementById('finalResponse').textContent = data.final_response || '(Không có phản hồi)';
+    document.getElementById('finalResponse').textContent = data.final_response || '(Chưa có phản hồi được tạo)';
   }
 
-  // ── BATCH FILE ───────────────────────────────────────────────────────────────
+  // ── BATCH FILE ─────────────────────────────────────────────
   let batchRows = [];
 
   function handleBatchDrop(e) {
@@ -674,12 +934,12 @@
       const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
       batchRows = rows;
-      document.getElementById('batchFileName').textContent = '✅ ' + file.name + ' — ' + rows.length + ' dòng';
+      document.getElementById('batchFileName').textContent = '✅ ' + file.name + ' — ' + rows.length + ' rows';
     };
     reader.readAsBinaryString(file);
   }
 
-  // ── BATCH PROCESSING ─────────────────────────────────────────────────────────
+  // ── BATCH PROCESSING ───────────────────────────────────────
   let batchResults = [];
 
   async function runBatch() {
@@ -727,7 +987,7 @@
     }));
 
     document.getElementById('batchFill').style.width = '100%';
-    document.getElementById('batchProgressLabel').innerHTML = '✅ Hoàn tất ' + rows.length + ' ticket';
+    document.getElementById('batchProgressLabel').innerHTML = '✅ Đã hoàn thành ' + rows.length + ' ticket';
     document.getElementById('batchProgressCount').textContent = '100%';
     btn.disabled = false;
     renderBatchResults(ok, fail);
@@ -752,9 +1012,9 @@
   function renderBatchResults(ok, fail) {
     const total = ok + fail;
     document.getElementById('batchStats').innerHTML =
-      '<div class="stat"><div class="stat-val" style="color:var(--navy)">' + total + '</div><div class="stat-label">Tổng xử lý</div></div>' +
+      '<div class="stat"><div class="stat-val" style="color:var(--text)">' + total + '</div><div class="stat-label">Tổng cộng</div></div>' +
       '<div class="stat"><div class="stat-val" style="color:var(--green)">' + ok + '</div><div class="stat-label">Thành công</div></div>' +
-      '<div class="stat"><div class="stat-val" style="color:var(--red)">' + fail + '</div><div class="stat-label">Lỗi</div></div>';
+      '<div class="stat"><div class="stat-val" style="color:var(--red)">' + fail + '</div><div class="stat-label">Thất bại</div></div>';
 
     const tbody = document.getElementById('batchTbody');
     tbody.innerHTML = batchResults.map(function(r, idx) {
@@ -762,8 +1022,8 @@
       const previewId = 'prev-' + idx;
       return '<tr>' +
         '<td><span class="key-chip">' + escHtml(r.key) + '</span></td>' +
-        '<td style="color:var(--text-2)">' + escHtml(r.type || '—') + '</td>' +
-        '<td style="color:var(--text-2)">' + escHtml(r.rootCause || '—') + '</td>' +
+        '<td>' + escHtml(r.type || '—') + '</td>' +
+        '<td>' + escHtml(r.rootCause || '—') + '</td>' +
         '<td><span class="badge ' + (r.sla === 'BREACH' ? 'badge-err' : 'badge-ok') + '">' + escHtml(r.sla || 'OK') + '</span></td>' +
         '<td style="color:var(--red);font-weight:600;font-size:11px">' + escHtml(r.escalateTo || '—') + '</td>' +
         '<td><div class="response-preview" id="' + previewId + '">' + escHtml(response) + '</div>' +
@@ -781,22 +1041,22 @@
     btn.textContent = expanded ? '▲ Thu gọn' : '▼ Xem thêm';
   }
 
-  // ── EXPORT ───────────────────────────────────────────────────────────────────
+  // ── EXPORT ─────────────────────────────────────────────────
   function exportBatchExcel() {
     if (!batchResults.length) return;
     const date = new Date().toISOString().slice(0,10);
-    const wsData = [['Issue Key','Loại vấn đề','Root Cause','SLA Status','Escalate đến','Phản hồi ZaloPay','Trạng thái']];
+    const wsData = [['Issue Key','Loại vấn đề','Root Cause','SLA Status','Escalate đến','Phản hồi Zalopay','Trạng thái']];
     batchResults.forEach(function(r) {
       wsData.push([r.key, r.type||'', r.rootCause||'', r.sla||'OK', r.escalateTo||'', r.final_response||r.error||'', r.status==='ok'?'OK':'Lỗi']);
     });
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(wsData);
     ws['!cols'] = [16,22,28,11,22,80,10].map(function(w){ return {wch:w}; });
-    XLSX.utils.book_append_sheet(wb, ws, 'Phan hoi ZaloPay');
+    XLSX.utils.book_append_sheet(wb, ws, 'Phan hoi Zalopay');
     XLSX.writeFile(wb, 'zalopay_response_' + date + '.xlsx');
   }
 
-  // ── HELPERS ──────────────────────────────────────────────────────────────────
+  // ── HELPERS ────────────────────────────────────────────────
   async function callPipeline(ticket, check_result) {
     const res = await fetch(ENDPOINT, {
       method: 'POST',
@@ -807,7 +1067,7 @@
     let data;
     try { data = JSON.parse(text); } catch(e) {
       const preview = text.slice(0, 120).replace(/<[^>]+>/g, '').trim();
-      throw new Error('Server lỗi (HTTP ' + res.status + '): ' + (preview || 'Không có phản hồi'));
+      throw new Error('Server error (HTTP ' + res.status + '): ' + (preview || 'No response'));
     }
     if (!res.ok || data.error) throw new Error(data.error || 'HTTP ' + res.status);
     return data;
