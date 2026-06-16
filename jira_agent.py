@@ -252,16 +252,18 @@ def analyze_batch(client: OpenAI, batch_rows: list[dict]) -> list[dict]:
     cleaned = re.sub(r"```(?:json)?|```", "", cleaned).strip()
     match = re.search(r"(\[[\s\S]*\])", cleaned)
     if match:
-        cleaned = match.group(1)
+        cleaned = match.group(1).strip()
     try:
-        results = json.loads(cleaned)
+        # Dùng raw_decode để bỏ qua text thừa sau JSON hợp lệ
+        decoder = json.JSONDecoder()
+        results, _ = decoder.raw_decode(cleaned)
         if not isinstance(results, list):
             results = [results]
         return results
     except json.JSONDecodeError:
-        # Fallback: nếu parse array thất bại, thử parse object đơn
+        # Fallback: thử parse từng object đơn (hỗ trợ nested objects)
         log.warning("Không parse được array, thử parse từng object...")
-        objects = re.findall(r'\{[^{}]*\}', cleaned)
+        objects = re.findall(r'\{(?:[^{}]|\{[^{}]*\})*\}', cleaned)
         results = []
         for obj in objects:
             try:
