@@ -362,20 +362,32 @@ def analyze_jira(data: str) -> dict:
     client = OpenAI(api_key=LLM_API_KEY, base_url=LLM_BASE_URL)
     log.info("Phân tích text (%d ký tự)...", len(data))
     raw = call_llm(client, f"Phân tích ticket sau:\n\n{data}")
-    # Thử parse array trước, fallback object đơn
     cleaned = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL)
     cleaned = re.sub(r"```(?:json)?|```", "", cleaned).strip()
-    arr_match = re.search(r"(\[[\s\S]*\])", cleaned)
-    if arr_match:
+
+    # Dùng raw_decode để extract tất cả JSON values (kể cả khi LLM trả về nhiều arrays)
+    decoder = json.JSONDecoder()
+    all_tickets = []
+    i = 0
+    while i < len(cleaned):
+        while i < len(cleaned) and cleaned[i] in ' \t\n\r':
+            i += 1
+        if i >= len(cleaned):
+            break
         try:
-            results = json.loads(arr_match.group(1))
-            return {"tickets": results if isinstance(results, list) else [results]}
-        except Exception:
-            pass
-    result = safe_parse_json(raw)
-    if "tickets" not in result:
-        result = {"tickets": [result]}
-    return result
+            obj, end = decoder.raw_decode(cleaned, i)
+            if isinstance(obj, list):
+                all_tickets.extend(obj)
+            elif isinstance(obj, dict):
+                all_tickets.append(obj)
+            i = end
+        except json.JSONDecodeError:
+            i += 1
+
+    if all_tickets:
+        return {"tickets": all_tickets}
+
+    raise ValueError(f"Không thể parse JSON từ output LLM.\nNội dung:\n{raw[:300]}")
 
 
 # ─── CLI ──────────────────────────────────────────────────────────────────────
