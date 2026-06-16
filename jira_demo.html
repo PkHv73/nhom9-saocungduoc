@@ -534,4 +534,39 @@ render();
 new Chart(document.getElementById('c1'),{type:'doughnut',data:{labels:['SLA Breach','SLA OK'],datasets:[{data:[${breach_n},${ok_n}],backgroundColor:['#e24b4a','#639922'],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:d=>' '+d.label+': '+d.raw+' tickets'}}}}});
 new Chart(document.getElementById('c2'),{type:'bar',data:{labels:${JSON.stringify(rcSorted.map(([k])=>k))},datasets:[{data:${JSON.stringify(rcSorted.map(([,v])=>v))},backgroundColor:${JSON.stringify(rcSorted.map((_,i)=>RC_COLORS2[i]||'#888'))},borderWidth:0,borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{stepSize:1,font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}});
 const rtL=${JSON.stringify(rtSorted.map(([k])=>k))},rtD=${JSON.stringify(rtSorted.map(([,v])=>v))},rtC=${JSON.stringify(RT_COLORS.slice(0,rtSorted.length))};
-document.getElementById('leg3').innerHTML=rtL.map((l,i)=>\`<span><span class="legend-dot" style="background:\${rtC[i]}"></span>\${l} \${rtD[i]
+document.getElementById('leg3').innerHTML=rtL.map((l,i)=>\`<span><span class="legend-dot" style="background:\${rtC[i]}"></span>\${l} \${rtD[i]}</span>\`).join('');
+new Chart(document.getElementById('c3'),{type:'doughnut',data:{labels:rtL,datasets:[{data:rtD,backgroundColor:rtC,borderWidth:0,hoverOffset:3}]},options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{display:false},tooltip:{callbacks:{label:d=>' '+d.label+': '+d.raw}}}}});
+new Chart(document.getElementById('c4'),{type:'bar',data:{labels:${JSON.stringify(escSorted.map(([k])=>k))},datasets:[{data:${JSON.stringify(escSorted.map(([,v])=>v))},backgroundColor:${JSON.stringify(['#ef9f27','#e24b4a','#7f77dd','#1d9e75','#888780','#378add','#5dcaa5','#d4537e'].slice(0,escSorted.length))},borderWidth:0,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},maxRotation:25},grid:{display:false}},y:{ticks:{stepSize:1,font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}}}}});
+<\/script></body></html>`;
+
+    const d = new Date().toISOString().slice(0,10);
+    const blob = new Blob([htmlOut], {type:'text/html;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `jira_dashboard_${d}.html`; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function exportExcel() {
+    if (!lastResults.length) return;
+    const HEADERS = ['Issue Key','Loại vấn đề','Vấn đề khách hàng','Root Cause','SLA Status','Ưu tiên','Escalate đến','Gợi ý xử lý CS'];
+    const rows = lastResults.map(t => [
+      t.key || '',
+      t.type || '',
+      t.summary || '',
+      t.root_cause || '',
+      t.sla_status || 'OK',
+      t.priority_action ? 'Có' : 'Không',
+      t.escalate_to || '',
+      t.suggestion || t.error || ''
+    ]);
+    const ws = XLSX.utils.aoa_to_sheet([HEADERS, ...rows]);
+    ws['!cols'] = [16,26,42,28,12,10,28,65].map(w => ({ wch: w }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Chi tiết Tickets');
+    const date = new Date().toISOString().slice(0,10);
+    XLSX.writeFile(wb, `jira_analysis_${date}.xlsx`);
+  }
+</script>
+</body>
+</html>
