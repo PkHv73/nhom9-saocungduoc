@@ -2,5 +2,8 @@
   "functions": {
     "api/pipeline.js": { "maxDuration": 300 },
     "api/analyze.js": { "maxDuration": 300 }
-  }
+  },
+  "redirects": [
+    { "source": "/", "destination": "/demo.html", "permanent": false }
+  ]
 }
