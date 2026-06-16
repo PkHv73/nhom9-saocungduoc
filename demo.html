@@ -697,39 +697,34 @@
 
     let completed = 0, ok = 0, fail = 0;
 
-    for (let i = 0; i < rows.length; i += CONCURRENCY) {
-      const chunk = rows.slice(i, Math.min(i + CONCURRENCY, rows.length));
+    await Promise.all(rows.map(async function(row, idx) {
+      const key = row['Issue Key'] || row['Issue key'] || ('ROW-' + (idx+1));
+      const type = row['Loại vấn đề'] || row['Loai van de'] || '';
+      const rootCause = row['Root Cause'] || '';
+      const sla = row['SLA Status'] || 'OK';
+      const escalateTo = row['Escalate đến'] || row['Escalate den'] || '';
+      const suggestion = row['Gợi ý xử lý CS'] || row['Goi y xu ly CS'] || '';
 
-      await Promise.all(chunk.map(async function(row, ci) {
-        const idx = i + ci;
-        const key = row['Issue Key'] || row['Issue key'] || ('ROW-' + (idx+1));
-        const type = row['Loại vấn đề'] || row['Loai van de'] || '';
-        const rootCause = row['Root Cause'] || '';
-        const sla = row['SLA Status'] || 'OK';
-        const escalateTo = row['Escalate đến'] || row['Escalate den'] || '';
-        const suggestion = row['Gợi ý xử lý CS'] || row['Goi y xu ly CS'] || '';
+      const ticketText = buildTicketText(key, type, rootCause, suggestion, escalateTo);
+      const checkResult = buildCheckResult(rootCause, suggestion, escalateTo);
 
-        const ticketText = buildTicketText(key, type, rootCause, suggestion, escalateTo);
-        const checkResult = buildCheckResult(rootCause, suggestion, escalateTo);
+      try {
+        const data = await callPipeline(ticketText, checkResult);
+        batchResults[idx] = { key, type, rootCause, sla, escalateTo, final_response: data.final_response || '', classification: data.classification || {}, analysis: data.analysis || {}, status: 'ok' };
+        ok++;
+      } catch(err) {
+        batchResults[idx] = { key, type, rootCause, sla, escalateTo, final_response: '', error: err.message, status: 'error' };
+        fail++;
+      }
 
-        try {
-          const data = await callPipeline(ticketText, checkResult);
-          batchResults[idx] = { key, type, rootCause, sla, escalateTo, final_response: data.final_response || '', classification: data.classification || {}, analysis: data.analysis || {}, status: 'ok' };
-          ok++;
-        } catch(err) {
-          batchResults[idx] = { key, type, rootCause, sla, escalateTo, final_response: '', error: err.message, status: 'error' };
-          fail++;
-        }
-
-        completed++;
-        const pct = Math.round((completed / rows.length) * 100);
-        document.getElementById('batchFill').style.width = pct + '%';
-        document.getElementById('batchProgressLabel').innerHTML =
-          '<span class="spinner" style="flex-shrink:0"></span>' +
-          '<span>Đang xử lý · <strong>' + completed + '</strong> / ' + rows.length + ' ticket</span>';
-        document.getElementById('batchProgressCount').textContent = pct + '%';
-      }));
-    }
+      completed++;
+      const pct = Math.round((completed / rows.length) * 100);
+      document.getElementById('batchFill').style.width = pct + '%';
+      document.getElementById('batchProgressLabel').innerHTML =
+        '<span class="spinner" style="flex-shrink:0"></span>' +
+        '<span>Đang xử lý · <strong>' + completed + '</strong> / ' + rows.length + ' ticket</span>';
+      document.getElementById('batchProgressCount').textContent = pct + '%';
+    }));
 
     document.getElementById('batchFill').style.width = '100%';
     document.getElementById('batchProgressLabel').innerHTML = '✅ Hoàn tất ' + rows.length + ' ticket';
