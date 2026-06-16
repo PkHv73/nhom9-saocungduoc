@@ -284,18 +284,17 @@
         };
       });
 
-      const allTickets = [];
       let processed = 0;
 
-      // Gửi từng batch, cập nhật tiến độ THỰC sau mỗi batch
+      // Chia thành các batch, gửi song song tất cả cùng lúc
+      const batches = [];
       for (let i = 0; i < rows.length; i += BATCH_SIZE) {
-        const batch = rows.slice(i, i + BATCH_SIZE);
-        const batchKeys = batch.map(getKey);
-        const firstKey = batchKeys[0];
+        batches.push(rows.slice(i, i + BATCH_SIZE));
+      }
 
-        updateProgress(processed, rows.length, firstKey, false);
+      updateProgress(0, rows.length, batches[0]?.[0] ? getKey(batches[0][0]) : '…', false);
 
-        // Format batch thành text gửi lên server
+      const batchPromises = batches.map(async (batch) => {
         const batchText = batch.map(r =>
           `=== TICKET: ${getKey(r)} ===\n${formatTicketText(r)}`
         ).join('\n\n');
@@ -308,11 +307,19 @@
         const data = await res.json();
         if (!data.success) throw new Error(data.error || 'Lỗi server');
 
-        // Merge kết quả — map key → result từ server, fallback theo thứ tự
-        const serverTickets = data.tickets || [];
+        processed += batch.length;
+        updateProgress(processed, rows.length, getKey(batch[batch.length - 1]), processed >= rows.length);
+
+        return { batch, serverTickets: data.tickets || [] };
+      });
+
+      const batchResults = await Promise.all(batchPromises);
+
+      // Merge kết quả theo thứ tự gốc
+      const allTickets = [];
+      batchResults.forEach(({ batch, serverTickets }) => {
         const resultMap = {};
         serverTickets.forEach(t => { if (t.key) resultMap[t.key] = t; });
-
         batch.forEach((r, idx) => {
           const key = getKey(r);
           const t = resultMap[key] || serverTickets[idx] || {};
@@ -328,11 +335,7 @@
             escalate_to: t.escalate_to || '',
           });
         });
-
-        processed += batch.length;
-        updateProgress(processed, rows.length, batchKeys[batchKeys.length-1], true);
-        await new Promise(r => setTimeout(r, 200)); // nhỏ pause để UI cập nhật
-      }
+      });
 
       lastResults = allTickets;
       renderResult({ tickets: allTickets });
