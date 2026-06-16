@@ -1,0 +1,501 @@
+Summary,Issue key,Issue id,Issue Type,Status,Project key,Project name,Project type,Project lead,Project description,Project url,Priority,Resolution,Assignee,Reporter,Creator,Created,Updated,Last Viewed,Resolved,Due Date,Votes,Labels,Labels,Labels,Description,Environment,Watchers,Watchers,Watchers,Watchers,Watchers,Watchers,Original Estimate,Remaining Estimate,Time Spent,Work Ratio,Σ Original Estimate,Σ Remaining Estimate,Σ Time Spent,Security Level,Attachment,Attachment,Attachment,Attachment,Attachment,Custom field (Account),Custom field (Account),Custom field (Account),Custom field (Actual Business Value),Custom field (BAU Category),Custom field (BAU Effort (Minute)),Custom field (Baseline end date),Custom field (Baseline start date),Custom field (Break SLA),Custom field (Build Number),Custom field (Business Value Result),Custom field (CS - Count non-urgent Promotion tickets),Custom field (CS - Count non-urgent tickets),Custom field (CS - Count urgent Promotion tickets),Custom field (CS - Count urgent tickets),Custom field (Cause),Custom field (Customer Request Type),Custom field (Descriptionss),Custom field (Descriptionz),Custom field (Detailed Root Cause),Custom field (Downtime (Minutes)),Custom field (Duration),Custom field (EPP-Epic-Color),Custom field (Effort (MDs)),Custom field (End date),Custom field (Epic Link),Custom field (Epic Owner),Custom field (Found in Build),Custom field (Fundlost),Custom field (GOC Comments),Custom field (Impacted Transaction),Custom field (Impacted User),Custom field (Incident End Time),Custom field (Incident Likelihood),Custom field (Incident Likelihood),Custom field (Incident Risk),Custom field (Incident Risk),Custom field (Incident Start Time),Custom field (Industry),Custom field (Iteration),Custom field (Justification for Priority),Custom field (Milestone Date),Custom field (Mitigation),Custom field (No. store),Custom field (Note),Custom field (Original story points),Custom field (PCF - Count non-urgent tickets),Custom field (PCF - Count urgent tickets),Custom field (PCI),Custom field (PO PIC),Custom field (Parent Link),Custom field (Planned End Date),Custom field (Planned Start Date),Custom field (Platform),Custom field (Portfolio),Custom field (Product Ops),Custom field (Program RAG),Custom field (Program RAG Comments),Custom field (QA Rough Effort Estimation(Man-Day)),Custom field (Rank),Custom field (Reason for SLA Breach),Custom field (Resolved Date),Custom field (Responsibility),Custom field (Risk consequence),Custom field (Root Cause Description),Custom field (Root Cause Type),Custom field (Rough Effort Estimation (Man-Day)),Custom field (SLA),Custom field (SLA Date),Sprint,Custom field (Squad),Custom field (Start date),Custom field (System Unavailable (Minutes)),Custom field (Target DAT),Custom field (Target end),Custom field (Target start),Custom field (Target user),Custom field (Task mode),Custom field (Task progress),Custom field (Team),Custom field (Team),Custom field (Team Role),Custom field (Teams Involved),Custom field (Teams Involved),Custom field (Teams Involved),Custom field (Teams Involved),Custom field (Test Complete Date),Custom field (Test Coverage (%)),Custom field (Test Start Date),Custom field (XAlert Score),Custom field (XAlert Score),Custom field (Zalo Pay Resolution),Custom field (Zalo Pay Resolution),Custom field (ZaloPay Environment),Comment,Comment,Comment,Comment,Comment,Comment,Comment,Comment,Comment
+[Ứng dụng] - [1413 - TikTok Shop] KTGD-Trạng thái hoàn tiền - Ticket 6927026,ISSUE-41046,1023150,Production Issue,Resolved,ISSUE,ZaloPay Production Issue,software,chaudh,ZaloPay Production Issue,,P3 (Medium),Done,cszalopay,cszalopay,cszalopay,15/06/2026 19:36,15/06/2026 20:09,15/06/2026 23:42,15/06/2026 20:04,,0,,,,"+ UserID: 200105000035207
++ TransID: 260614001940325
+GD TikTok Shop đã dc hoàn tiền thành công về TKTS Lotte nhưng trạng thái giao dịch đối tác PROCESSING, KH chưa nhận được hoàn lại hạn mức khả dụng
+=> Nhờ team kiểm tra nguyên nhân và HXL giúp. ",,cszalopay,incidentadministrator,sondtt,,,,,,,,,,,,15/Jun/26 7:36 PM;cszalopay;0.png;https://jira.zalopay.vn/secure/attachment/777725/0.png,15/Jun/26 7:36 PM;cszalopay;1.png;https://jira.zalopay.vn/secure/attachment/777726/1.png,15/Jun/26 7:37 PM;cszp_group2;screenshot_1781527016.png;https://jira.zalopay.vn/secure/attachment/777727/screenshot_1781527016.png,,,,,,,Internal Support (CS/FA/OP/PO/BO/Others Squad),,,,no,,,10,44,0,0,,Lending_paylater,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,22,14,,,,,,,,,,,,0|i4ohgg:,,15/06/2026 20:04,,,"Were there any external factors affecting the issue, such as third-party service failures, or changes in external APIs?",External Factors,,4,19/06/2026 18:00,PCF-FS Lending 26.06.A,,,,,,,,,,,,,Lending Solutions,,,,,,,,,,,,"15/Jun/26 7:36 PM;incidentadministrator;Lưu ý khi xử lý ticket
+
+*Ticket PIC* (người kiểm tra thông tin đầu vào, điều phối ticket):
+
+1. Cập nhật Customer Request Type nếu sai hoặc chuyển lại Reporter nếu không có thông tin.
+2. Chọn Acknowledge nếu ticket đã đúng Customer Request Type.
+3. Chọn Need more information nếu cần thêm thông tin từ Reporter.
+4. Gán ticket cho PIC (Người xử lý yêu cầu), chuyển ticket sang trạng thái Assigned.
+
+*PIC* (Người xử lý yêu cầu)
+
+1. Chọn Start Progress để bắt đầu xử lý ticket theo thời gian SLA đã cam kết (thời gian được tính từ lúc khởi tạo yêu cầu tới lúc chọn Resolve).
+2. Chọn Resolve khi ticket thỏa 1 trong các tình huống sau
+    - Đã được xử lý xong.
+    - Đã có thời gian cam kết xử lý từ đối tác/business & đã comment cho người tạo yêu cầu.
+    - Đã tạo bug/backlog để xử lý yêu cầu của khách hàng & đã comment cho người tạo yêu cầu.
+
+*Reporter* (Người tạo yêu cầu): Sau khi ticket chuyển qua trạng thái Resolved, Reporter làm việc với khách hàng. Nếu khách hàng đồng ý thì chuyển ticket qua Close, ngược lại ReOpen.
+
+Tham khảo chi tiết quy trình tại: https://confluence.zalopay.vn/x/Pi6TDg
+
+Mọi thắc mắc, vui lòng liên hệ PMO để được hỗ trợ.","15/Jun/26 8:04 PM;sondtt;Giao dịch lỗi ở bước gạch nợ bên LFVN, hiện đã được đối soát thành công, hạn mức KH đã được cập nhật
+
+thời điểm kiểm tra hạn mức đã hoàn về 477531, 15-06-2026 20:02:36",,,,,,,
+[Ứng dụng] - [441 - Nạp Data 3G/4G] UD-Lỗi giao diện (UI) - Ticket 6926826,ISSUE-41042,1023113,Production Issue,Resolved,ISSUE,ZaloPay Production Issue,software,chaudh,ZaloPay Production Issue,,P3 (Medium),Done,cszalopay,cszalopay,cszalopay,15/06/2026 17:41,15/06/2026 21:39,15/06/2026 22:11,15/06/2026 21:35,,0,,,,"- Mô tả lỗi: KH khiếu nại hiển thị tiêu đề là VTVgo Plus 30 ngày nhưng mô tả là thời hạn sử dụng VTVgo Plus trong vòng 7 ngày kể từ khi nhận được tài khoản.
+=> nhờ team hỗ trợ kiểm tra nguyên nhân và hướng xử lý 
+- Thời gian thực hiện: 15 Th06 2026 06:22
+- UserID: 200322000030879
++ Platform: ZPA
++ OS: IOS
++ AppVersion: 11.7.0
++ UserAgent: Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 ZaloPayClient/11.7.0 OS/26.5 Platform/ios Secured/true ZaloPayWebClient/11.7.0
+
+
+
+",,cszalopay,incidentadministrator,kietpt2,,,,,,,,,,,,15/Jun/26 5:41 PM;cszalopay;0.png;https://jira.zalopay.vn/secure/attachment/777703/0.png,,,,,,,,,Internal Support (CS/FA/OP/PO/BO/Others Squad),,,,no,,,10,44,0,0,,Payment_Telco,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,22,14,,,,,,,,,,,,0|i4oh8g:,,15/06/2026 21:35,,,Were the function too complex or hard to follow for users? Might the user have skimmed the information or misheard/misread key details.,User misuderstanding,,3,18/06/2026 17:41,PMTBL: Sprint 26.06.B,,,,,,,,,,,,,Utility Solutions,,,,,,,,,,,,"15/Jun/26 5:41 PM;incidentadministrator;Lưu ý khi xử lý ticket
+
+*Ticket PIC* (người kiểm tra thông tin đầu vào, điều phối ticket):
+
+1. Cập nhật Customer Request Type nếu sai hoặc chuyển lại Reporter nếu không có thông tin.
+2. Chọn Acknowledge nếu ticket đã đúng Customer Request Type.
+3. Chọn Need more information nếu cần thêm thông tin từ Reporter.
+4. Gán ticket cho PIC (Người xử lý yêu cầu), chuyển ticket sang trạng thái Assigned.
+
+*PIC* (Người xử lý yêu cầu)
+
+1. Chọn Start Progress để bắt đầu xử lý ticket theo thời gian SLA đã cam kết (thời gian được tính từ lúc khởi tạo yêu cầu tới lúc chọn Resolve).
+2. Chọn Resolve khi ticket thỏa 1 trong các tình huống sau
+    - Đã được xử lý xong.
+    - Đã có thời gian cam kết xử lý từ đối tác/business & đã comment cho người tạo yêu cầu.
+    - Đã tạo bug/backlog để xử lý yêu cầu của khách hàng & đã comment cho người tạo yêu cầu.
+
+*Reporter* (Người tạo yêu cầu): Sau khi ticket chuyển qua trạng thái Resolved, Reporter làm việc với khách hàng. Nếu khách hàng đồng ý thì chuyển ticket qua Close, ngược lại ReOpen.
+
+Tham khảo chi tiết quy trình tại: https://confluence.zalopay.vn/x/Pi6TDg
+
+Mọi thắc mắc, vui lòng liên hệ PMO để được hỗ trợ.","15/Jun/26 9:35 PM;kietpt2;Dear cs, team đã update lại thông tin gói đồng bộ rồi nhé.
+Thanks",,,,,,,
+[Khuyến mãi] - [3460 - DLS_260213_753 - Thứ 6 Không Tiền Mặt - Đi Buýt 0Đ] KM-Không sử dụng được Direct Discount (giảm giá) - Ticket 6925597,ISSUE-41024,1022389,Production Issue,Resolved,ISSUE,ZaloPay Production Issue,software,chaudh,ZaloPay Production Issue,,P3 (Medium),Done,cszalopay,cszalopay,cszalopay,14/06/2026 18:32,15/06/2026 10:49,15/06/2026 19:56,15/06/2026 10:47,,0,DLS,Jun-26,MaiBP,"+ UserID: 241123001502277
++ TransID: 260612002393348
+- RewardCode: 3460 - DLS_260213_753 - Thứ 6 Không Tiền Mặt - Đi Buýt 0Đ
+- Thời gian: 15:38:09 ngày 12/06/2026
+
+
+- Vấn đề của KH:  kh khiếu nại không được miễn phí vé xe Bus và thứ sáu
+cs kiểm tra tnc đang chỉ áp dụng appid 4058
+
+
+=> Nhờ team hỗ trợ kiểm tra nguyên nhân và hxl  
+
+
+
+",,247_adm,cszalopay,incidentadministrator,maibp,,,,,,,,,,,14/Jun/26 6:32 PM;cszalopay;0.png;https://jira.zalopay.vn/secure/attachment/776555/0.png,,,,,,,,,Internal Support (CS/FA/OP/PO/BO/Others Squad),,,,no,,,10,44,0,0,,Promotion campaign,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,22,14,,,,,,,,,,,,0|i4ocsw:,,15/06/2026 10:47,,,,User need more Information,,5,19/06/2026 18:00,,,,,,,,,,,,,,ZPO,,,,,,,,,,,,"14/Jun/26 6:32 PM;incidentadministrator;Lưu ý khi xử lý ticket
+
+*Ticket PIC* (người kiểm tra thông tin đầu vào, điều phối ticket):
+
+1. Cập nhật Customer Request Type nếu sai hoặc chuyển lại Reporter nếu không có thông tin.
+2. Chọn Acknowledge nếu ticket đã đúng Customer Request Type.
+3. Chọn Need more information nếu cần thêm thông tin từ Reporter.
+4. Gán ticket cho PIC (Người xử lý yêu cầu), chuyển ticket sang trạng thái Assigned.
+
+*PIC* (Người xử lý yêu cầu)
+
+1. Chọn Start Progress để bắt đầu xử lý ticket theo thời gian SLA đã cam kết (thời gian được tính từ lúc khởi tạo yêu cầu tới lúc chọn Resolve).
+2. Chọn Resolve khi ticket thỏa 1 trong các tình huống sau
+    - Đã được xử lý xong.
+    - Đã có thời gian cam kết xử lý từ đối tác/business & đã comment cho người tạo yêu cầu.
+    - Đã tạo bug/backlog để xử lý yêu cầu của khách hàng & đã comment cho người tạo yêu cầu.
+
+*Reporter* (Người tạo yêu cầu): Sau khi ticket chuyển qua trạng thái Resolved, Reporter làm việc với khách hàng. Nếu khách hàng đồng ý thì chuyển ticket qua Close, ngược lại ReOpen.
+
+Tham khảo chi tiết quy trình tại: https://confluence.zalopay.vn/x/Pi6TDg
+
+Mọi thắc mắc, vui lòng liên hệ PMO để được hỗ trợ.","14/Jun/26 6:38 PM;247_adm;(automated message - contact team Growth Enablement when it's incorrect (PIC is [~hoangnv6]))
+(flow auto-extract result success)
+
+Các thông tin được phân loại và trích xuất từ ticket như sau:
+- issue_type: Already selected promotion but did not receive discount after payment, or cause the transaction failed (NOT related to cashback) for Cashier or QuickPay, or promotion is not automatically applied into the transaction for AgreementPay (trans_info' product_code is 'AC003')
+- related_info: {code}
+{
+  ""user_id"": ""241123001502277"",
+  ""date"": ""2026-06-12"",
+  ""time"": ""15:38:09"",
+  ""reward_code"": ""DLS_260213_753"",
+  ""trans_id"": ""260612002393348"",
+  ""order_amount"": 7000,
+  ""trans_info"": {
+    ""trans_id"": 260612002393348,
+    ""trans_time"": ""2026-06-12T15:38:09+07:00"",
+    ""trans_status"": 1,
+    ""user_id"": ""241123001502277"",
+    ""product_code"": ""AC001"",
+    ""app_id"": 4992,
+    ""sub_app_id"": null,
+    ""app_trans_id"": ""260612_TX1781253489307_156862_128575"",
+    ""order_amount"": 7000,
+    ""pmc_id"": 38,
+    ""first_x_no"": ""undefined""
+  }
+}{code}
+
+
+(Anh/Chị/Em có thể bỏ qua comment này nếu flow auto-check có sai sót ạhhh)
+Tks all.","14/Jun/26 6:40 PM;247_adm;(automated message - contact team Growth Enablement when it's incorrect (PIC is [~hoangnv6]))
+(flow auto-check result fail - may be need to check further)
+
+Hi anh/chị/em.
+
+App ID '4992' không nằm trong danh sách App ID được áp dụng [4058] của khuyến mãi. Evidence: campaign_id 31440 trên app_trans_id 260612_TX1781253489307_156862_128575 lúc 2026-06-12T15:38:09+07:00
+
+(Anh/Chị/Em có thể bỏ qua comment này nếu flow auto-check có sai sót ạhhh)
+Tks all.","15/Jun/26 10:46 AM;maibp;Hi [~cszalopay]
+
+Với appid 4992 user có thể nhập mã ZLPBUST6 tại quickpay lấy voucher để sử dụng nhé ạ. Mã CT DLS_260206_381. Nhờ CS hướng dẫn lại user nhé",,,,,
+[Khuyến mãi] - [3480 - ZFS_260401_119 - Hoàn đến 100K khi gửi tiết kiệm lần đầu] KM-Không nhận được cashback - Ticket 6925641,ISSUE-41021,1022330,Production Issue,Resolved,ISSUE,ZaloPay Production Issue,software,chaudh,ZaloPay Production Issue,,P3 (Medium),Done,cszalopay,cszalopay,cszalopay,14/06/2026 13:40,15/06/2026 11:29,15/06/2026 19:56,15/06/2026 11:27,,0,HongTT3,Jun-26,,"UID 251010000508699
+TID 260514001665922
+Tên chương trình  ZFS_260401_119    Hoàn đến 100K khi gửi tiết kiệm lần đầu
+KH gửi tiền tiết kiệm, đã đáo hạn nhưng chưa nhận được vé thưởng xác nhận được hoàn tiền.
+=> nhờ team hỗ trợ kiểm tra nguyên nhân và hướng xử lý 
+UserIDSố điện thoạiTarget AudienceRisk LevelBlacklistTài khoản
+251010000508699	|84344675233	|Normal User	|Low	|User không nằm trong Blacklist	|User không nằm trong List Voucher Trading	|
+
+
+
+
+",,247_adm,cszalopay,hongtt3,incidentadministrator,,,,,,,,,,,14/Jun/26 1:40 PM;cszalopay;0.png;https://jira.zalopay.vn/secure/attachment/776485/0.png,14/Jun/26 1:40 PM;cszalopay;1.png;https://jira.zalopay.vn/secure/attachment/776486/1.png,14/Jun/26 1:46 PM;247_adm;file.json;https://jira.zalopay.vn/secure/attachment/776487/file.json,,,,,,,Internal Support (CS/FA/OP/PO/BO/Others Squad),,,,no,,,10,44,0,0,,Promotion campaign,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,22,14,,,,,,,,,,,,0|i4ocg8:,,15/06/2026 11:27,,,Were the function too complex or hard to follow for users? Might the user have skimmed the information or misheard/misread key details.,User misuderstanding,,5,19/06/2026 13:40,,,,,,,,,,,,,,CRM,ZPO,,,,,,,,,,,"14/Jun/26 1:40 PM;incidentadministrator;Lưu ý khi xử lý ticket
+
+*Ticket PIC* (người kiểm tra thông tin đầu vào, điều phối ticket):
+
+1. Cập nhật Customer Request Type nếu sai hoặc chuyển lại Reporter nếu không có thông tin.
+2. Chọn Acknowledge nếu ticket đã đúng Customer Request Type.
+3. Chọn Need more information nếu cần thêm thông tin từ Reporter.
+4. Gán ticket cho PIC (Người xử lý yêu cầu), chuyển ticket sang trạng thái Assigned.
+
+*PIC* (Người xử lý yêu cầu)
+
+1. Chọn Start Progress để bắt đầu xử lý ticket theo thời gian SLA đã cam kết (thời gian được tính từ lúc khởi tạo yêu cầu tới lúc chọn Resolve).
+2. Chọn Resolve khi ticket thỏa 1 trong các tình huống sau
+    - Đã được xử lý xong.
+    - Đã có thời gian cam kết xử lý từ đối tác/business & đã comment cho người tạo yêu cầu.
+    - Đã tạo bug/backlog để xử lý yêu cầu của khách hàng & đã comment cho người tạo yêu cầu.
+
+*Reporter* (Người tạo yêu cầu): Sau khi ticket chuyển qua trạng thái Resolved, Reporter làm việc với khách hàng. Nếu khách hàng đồng ý thì chuyển ticket qua Close, ngược lại ReOpen.
+
+Tham khảo chi tiết quy trình tại: https://confluence.zalopay.vn/x/Pi6TDg
+
+Mọi thắc mắc, vui lòng liên hệ PMO để được hỗ trợ.","14/Jun/26 1:46 PM;247_adm;(automated message - contact team Growth Enablement when it's incorrect (PIC is [~hoangnv6]))
+(flow auto-extract result success)
+
+Các thông tin được phân loại và trích xuất từ ticket như sau:
+- issue_type: Not mark done or not receive reward after doing action (including making a transaction) that's not related to opening bank account or bank card
+- related_info: {code}
+{
+  ""user_id"": ""251010000508699"",
+  ""date"": ""2026-05-14"",
+  ""time"": ""12:19:10"",
+  ""action_name"": ""gửi tiết kiệm lần đầu"",
+  ""reward_name"": ""cashback"",
+  ""trans_id"": ""260514001665922"",
+  ""trans_info"": {
+    ""trans_id"": 260514001665922,
+    ""trans_time"": ""2026-05-14T12:19:10+07:00"",
+    ""trans_status"": 1,
+    ""user_id"": ""251010000508699"",
+    ""product_code"": ""WD003"",
+    ""app_id"": 8686,
+    ""sub_app_id"": null,
+    ""app_trans_id"": ""260514444849627343"",
+    ""order_amount"": 100000,
+    ""pmc_id"": 38,
+    ""first_x_no"": ""undefined""
+  }
+}{code}
+
+
+(Anh/Chị/Em có thể bỏ qua comment này nếu flow auto-check có sai sót ạhhh)
+Tks all.","15/Jun/26 10:38 AM;hongtt3;Hi [~nghiatn],
+
+Nhờ em hỗ trợ assign nhân sự check giúp chị nguyên nhân user chưa nhận được quà nhé.
+ * Flowid 2047
+ * Presentid 19813
+
+Cám ơn team.","15/Jun/26 10:47 AM;247_adm;(automated message - contact team Growth Enablement when it's incorrect (PIC is [~hoangnv6]))
+(flow auto-check result fail - may be need to check further)
+
+Hi anh/chị/em.
+
+Condition failed at original_balance. Expected: >= 1000000L, Actual: 100000. Version: 3
+
+(Anh/Chị/Em có thể bỏ qua comment này nếu flow auto-check có sai sót ạhhh)
+Tks all.","15/Jun/26 11:27 AM;hongtt3;Hi [~cszalopay],
+
+Số tiền mở sổ không đúng với điều kiện của CT nên user không nhận được vé thưởng + cashback (Điều kiện là mở sổ từ 1tr mà user mở sổ 100k). Nhờ team thông tin đến user giúp Hồng nhé.
+
+Cám ơn team.",,,,
+[Thanh toán] - [4280 - Thanh toán khoản trả chậm] TT-TPE Thất bại - Ticket 6924716,ISSUE-41017,1022315,Production Issue,Resolved,ISSUE,ZaloPay Production Issue,software,chaudh,ZaloPay Production Issue,,P3 (Medium),Done,cszalopay,cszalopay,cszalopay,14/06/2026 12:46,14/06/2026 22:59,15/06/2026 19:56,14/06/2026 22:51,,0,,,,"+ UserID: 250112000009926
++ TransID: 260613004220435 - 260613004204424
++ Giao dịch TPE pending -998 
++ Mô tả: Tại sao tôi đã thanh toán trừ xu của tôi, mà tài khoản tôi vẫn chưa thanh toán ví trả sau??? Tôi nợ ví trả sau 5000đồng , Làm tôi thanh toán 2 lần bị trừ 10.000 xu mà vẫn ko hoàn thành giao dịch.
+Vấn đề: 2 GD thanh toán dư nợ trả chậm bị lỗi -998 KH dùng giảm giá trừ xu để thanh toán đã bị trừ xu nhưng GD vẫn pending
+Nhờ Dev check 
+",,cszalopay,incidentadministrator,sondtt,,,,,,,,,,,,,,,,,,,,,Internal Support (CS/FA/OP/PO/BO/Others Squad),,,,no,,,10,44,0,0,,Lending_paylater,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,22,14,,,,,,,,,,,,0|i4occw:,,14/06/2026 22:51,,,"Were there any external factors affecting the issue, such as third-party service failures, or changes in external APIs?",External Factors,,4,18/06/2026 12:46,PCF-FS Lending 26.06.A,,,,,,,,,,,,,Lending Solutions,,,,,,,,,,,,"14/Jun/26 12:46 PM;incidentadministrator;Lưu ý khi xử lý ticket
+
+*Ticket PIC* (người kiểm tra thông tin đầu vào, điều phối ticket):
+
+1. Cập nhật Customer Request Type nếu sai hoặc chuyển lại Reporter nếu không có thông tin.
+2. Chọn Acknowledge nếu ticket đã đúng Customer Request Type.
+3. Chọn Need more information nếu cần thêm thông tin từ Reporter.
+4. Gán ticket cho PIC (Người xử lý yêu cầu), chuyển ticket sang trạng thái Assigned.
+
+*PIC* (Người xử lý yêu cầu)
+
+1. Chọn Start Progress để bắt đầu xử lý ticket theo thời gian SLA đã cam kết (thời gian được tính từ lúc khởi tạo yêu cầu tới lúc chọn Resolve).
+2. Chọn Resolve khi ticket thỏa 1 trong các tình huống sau
+    - Đã được xử lý xong.
+    - Đã có thời gian cam kết xử lý từ đối tác/business & đã comment cho người tạo yêu cầu.
+    - Đã tạo bug/backlog để xử lý yêu cầu của khách hàng & đã comment cho người tạo yêu cầu.
+
+*Reporter* (Người tạo yêu cầu): Sau khi ticket chuyển qua trạng thái Resolved, Reporter làm việc với khách hàng. Nếu khách hàng đồng ý thì chuyển ticket qua Close, ngược lại ReOpen.
+
+Tham khảo chi tiết quy trình tại: https://confluence.zalopay.vn/x/Pi6TDg
+
+Mọi thắc mắc, vui lòng liên hệ PMO để được hỗ trợ.","14/Jun/26 10:51 PM;sondtt;Giao dịch trả nợ cho Mini BNPL hiện tại chưa thể áp dụng với Promotion và dùng xu
+
+Nhờ [~cszalopay] hướng dẫn KH thanh toán lại và không dùng Promotion và xu
+
+ 
+
+Ngoài ra team PO [~phuongnhm3] đang làm việc với team Growth để tắt promotion cho app trả nợ Mini, sau này KH sẽ không bị lỗi này nữa",,,,,,,
+[Thanh toán] - [3721 - Thanh toán dư nợ Trả góp CIMB] KTGD-Giao dịch thành công - Ticket 6921808,ISSUE-41009,1022267,Production Issue,Resolved,ISSUE,ZaloPay Production Issue,software,chaudh,ZaloPay Production Issue,,P3 (Medium),Done,cszalopay,cszalopay,cszalopay,14/06/2026 09:56,15/06/2026 20:09,15/06/2026 23:43,15/06/2026 20:02,,0,,,,"Dear team 
+USer thanh toán dư nợ tài khoản trả sau tuy nhiên tài khoản trả sau chưa được gạch nợ nhờ team kiểm tra 
+UserID:230518004509696    
+TransID:260610001493954 
+
+
+
+Cám ơn ạ 
+",,cszalopay,incidentadministrator,sondtt,,,,,,,,,,,,14/Jun/26 9:56 AM;cszalopay;0.png;https://jira.zalopay.vn/secure/attachment/776335/0.png,,,,,,,,,Internal Support (CS/FA/OP/PO/BO/Others Squad),,,,no,,,10,44,0,0,,Lending_installment,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,22,14,,,,,,,,,,,,0|i4oc28:,,15/06/2026 20:02,,,"Were there any external factors affecting the issue, such as third-party service failures, or changes in external APIs?",External Factors,,4,18/06/2026 09:56,PCF-FS Lending 26.06.A,,,,,,,,,,,,,Lending Solutions,,,,,,,,,,,,"14/Jun/26 9:56 AM;incidentadministrator;Lưu ý khi xử lý ticket
+
+*Ticket PIC* (người kiểm tra thông tin đầu vào, điều phối ticket):
+
+1. Cập nhật Customer Request Type nếu sai hoặc chuyển lại Reporter nếu không có thông tin.
+2. Chọn Acknowledge nếu ticket đã đúng Customer Request Type.
+3. Chọn Need more information nếu cần thêm thông tin từ Reporter.
+4. Gán ticket cho PIC (Người xử lý yêu cầu), chuyển ticket sang trạng thái Assigned.
+
+*PIC* (Người xử lý yêu cầu)
+
+1. Chọn Start Progress để bắt đầu xử lý ticket theo thời gian SLA đã cam kết (thời gian được tính từ lúc khởi tạo yêu cầu tới lúc chọn Resolve).
+2. Chọn Resolve khi ticket thỏa 1 trong các tình huống sau
+    - Đã được xử lý xong.
+    - Đã có thời gian cam kết xử lý từ đối tác/business & đã comment cho người tạo yêu cầu.
+    - Đã tạo bug/backlog để xử lý yêu cầu của khách hàng & đã comment cho người tạo yêu cầu.
+
+*Reporter* (Người tạo yêu cầu): Sau khi ticket chuyển qua trạng thái Resolved, Reporter làm việc với khách hàng. Nếu khách hàng đồng ý thì chuyển ticket qua Close, ngược lại ReOpen.
+
+Tham khảo chi tiết quy trình tại: https://confluence.zalopay.vn/x/Pi6TDg
+
+Mọi thắc mắc, vui lòng liên hệ PMO để được hỗ trợ.","14/Jun/26 9:15 PM;sondtt;hiện tại có 1 tập users đã trừ tiền nhưng chưa gọi CIMB gạch nợ được, tập này gồm 42 trans trong attachment này trong ticket này https://jira.zalopay.vn/browse/ISSUE-40951
+
+=> HXL là T2 (chậm nhất 15:00), dev sẽ trigger để gọi qua CIMB những giao dịch này để gạch nợ, expect là sẽ clear khoản trả góp của KH. TẤT CẢ NHỮNG CHI PHÍ PHÁT SINH TỪ LÃI -> PHÍ DO ISSUE NÀY thì Zalopay sẽ cover.
+
+Nhờ CS inform KH (1) là t2 18:00 quay lại kiểm tra, Zalopay sẽ update trước 18:00 do hệ thống gạch nợ bị chậm nên chưa được cập nhật. (2) báo KH yên tâm là nếu có bất kỳ chi phí/ lãi gì phát sinh ZLP sẽ cover","15/Jun/26 8:02 PM;sondtt;đã gạch nợ bù cho KH thành thông, nhờ [~cszalopay] báo KH kiểm tra lại",,,,,,
+[Nội bộ] - [4527 - Nạp Data Viettel Sann] Góp ý sản phẩm - Ticket 6924468,ISSUE-41008,1022211,Support,Resolved,ISSUE,ZaloPay Production Issue,software,chaudh,ZaloPay Production Issue,,P3 (Medium),Done,cszalopay,cszalopay,cszalopay,13/06/2026 20:55,15/06/2026 12:29,15/06/2026 19:56,15/06/2026 12:24,,0,,,,"Vấn đề cần hỗ trợ: Hiện CS kiểm tra giao diện nạp data gói VTVgo Plus 30 ngày, ở ứng dụng Zalopay hiển thị phía ngoài gói 30 ngày với giá 20,000đ nhưng khi truy cập chi tiết gói thì hiển thị 7 ngày (ảnh đính kèm). CS kiểm tra trên CPStool cũng hiển thị thông tin PackageCode: vtvgo-plus-30d.
+
+Nhờ team kiểm tra giúp đây có phải lỗi hiển thị thông tin gói chưa được đồng hộ không và đây có phải gói nạp data 4G/5G cho thuê bao hay gói chỉ sử dụng nạp cho VTVgo Plus. Đồng thời, nếu là gói VTVgo Plus thì gói này có quyền lợi xem Wolrdcup 2026 hay không. Nếu thông tin chưa đồng nhất, nhờ team điều chỉnh lại giúp CS để Khách hàng không bị confuse khi sử dụng dịch vụ tại Zalopay.
+
++ UserID: 260517001003859
+ + TransID: 260612004333942
+||AppID||OrderID||ZPTransID||ZaloPayID||Description||ReturnCode||ProviderReturnMessage||Amount||ProviderCode||PhoneNumber||TelcoCode||PackageCode||DeliverTransID||UpdateTime||
+|4527|2606124701143711076|260612004333942|260517001003859|Nạp Data Viettel 0383429697|1|SUCCESS|20,000|VTVCAB_VIETTEL_SANN|0383429697|VIETTEL|vtvgo-plus-30d|2606124701143711076|2026-06-12 22:34:34|",,247_adm,cszalopay,incidentadministrator,kietpt2,,,,,,,,,,,13/Jun/26 8:55 PM;cszalopay;0.png;https://jira.zalopay.vn/secure/attachment/776240/0.png,13/Jun/26 8:55 PM;cszalopay;1.png;https://jira.zalopay.vn/secure/attachment/776241/1.png,,,,,,,,Internal Support (CS/FA/OP/PO/BO/Others Squad),,,,no,,,10,44,0,0,,Payment_Telco,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,22,14,,,,,,,,,,,,0|i4obps:,,15/06/2026 12:24,,,Were the function too complex or hard to follow for users? Might the user have skimmed the information or misheard/misread key details.,User misuderstanding,,3,17/06/2026 18:00,,,,,,,,,,,,,,Utility Solutions,,,,,,,,,,,,"13/Jun/26 8:55 PM;incidentadministrator;Lưu ý khi xử lý ticket
+
+*Ticket PIC* (người kiểm tra thông tin đầu vào, điều phối ticket):
+
+1. Cập nhật Customer Request Type nếu sai hoặc chuyển lại Reporter nếu không có thông tin.
+2. Chọn Acknowledge nếu ticket đã đúng Customer Request Type.
+3. Chọn Need more information nếu cần thêm thông tin từ Reporter.
+4. Gán ticket cho PIC (Người xử lý yêu cầu), chuyển ticket sang trạng thái Assigned.
+
+*PIC* (Người xử lý yêu cầu)
+
+1. Chọn Start Progress để bắt đầu xử lý ticket theo thời gian SLA đã cam kết (thời gian được tính từ lúc khởi tạo yêu cầu tới lúc chọn Resolve).
+2. Chọn Resolve khi ticket thỏa 1 trong các tình huống sau
+    - Đã được xử lý xong.
+    - Đã có thời gian cam kết xử lý từ đối tác/business & đã comment cho người tạo yêu cầu.
+    - Đã tạo bug/backlog để xử lý yêu cầu của khách hàng & đã comment cho người tạo yêu cầu.
+
+*Reporter* (Người tạo yêu cầu): Sau khi ticket chuyển qua trạng thái Resolved, Reporter làm việc với khách hàng. Nếu khách hàng đồng ý thì chuyển ticket qua Close, ngược lại ReOpen.
+
+Tham khảo chi tiết quy trình tại: https://confluence.zalopay.vn/x/Pi6TDg
+
+Mọi thắc mắc, vui lòng liên hệ PMO để được hỗ trợ.","14/Jun/26 7:01 AM;247_adm;This message is generated by Agent. Please contact anhtvh if there are any issues.
+
+TransID: 260612004333942
+Based on the provided logs, the transaction was successful.
+
+**Reason:**
+No error was detected. The `provider-sann` service returned a success response with `error_code: 1` and the message ""Giao dịch thành công"" (Transaction successful), which corresponds to the success flow.
+
+### Summary of Steps
+
+1.  **Receive Payment Callback**
+    *   **Container:** everest
+    *   **Content:** The core system receives an HTTP POST request on the callback endpoint `/payment/api/v1/orders:callback`, initiating the transaction flow.
+
+2.  **Queue Delivery Task**
+    *   **Container:** everest
+    *   **Content:** The core system pushes a message to the `prod_everest_deliver_direct` message queue to trigger the product delivery process asynchronously and sends a success response to the callback originator.
+
+3.  **Process Delivery Task**
+    *   **Container:** everest
+    *   **Content:** A consumer in the core system picks up the message from the queue and prepares to call the internal provider service.
+
+4.  **Call Internal Provider Service**
+    *   **Container:** everest
+    *   **Content:** The core system sends a POST request to the internal `provider-sann` service at the `/v2/deliver` endpoint to handle the product delivery.
+
+5.  **Provider Calls External Supplier**
+    *   **Container:** provider-sann
+    *   **Content:** After receiving the request, the provider service calls the external supplier's API (`api.datadidong.com`) to register the service for the user.
+
+6.  **Supplier Confirms Delivery**
+    *   **Container:** provider-sann
+    *   **Content:** The provider service receives a successful response from the external supplier, indicating `""success"":true` and `""return"":""SUCCESS""`.
+
+7.  **Provider Responds with Success**
+    *   **Container:** provider-sann
+    *   **Content:** The provider service sends a success response back to the core system, with `return_code: 1` and an internal `error_code: 1` (""Giao dịch thành công"").
+
+8.  **Queue Final Transaction Status**
+    *   **Container:** everest
+    *   **Content:** Upon receiving the successful response from the provider, the core system maps the transaction status to success (`""status"":1`) and pushes the final transaction details to the `prod_everest_final_order_backoffice_direct` message queue for data persistence.
+
+Logs:
+1. **everest**
+   {""level"":""info"",""time"":""2026-06-12T22:34:26.726715954+07:00"",""caller"":""monitor/gin.go:86"",""msg"":""server: received request"",""trace_id"":""565677b718e047a47295fed0eeac84a9"",""http.server.request.params"":[{""Key"":""callback"",""Value"":"":callback""}],""http.server.request.query"":{},""http.server.request.method"":""POST"",""http.server.request.client_ip"":""49.213.99.67"",""http.server.request.path"":""/payment/api/v1/orders:callback"",""http.server.request.body"":""{\""data\"":\""{\\\""appid\\\"":4527,\\\""zptransid\\\"":260612004333942,\\\""apptransid\\\"":\\\""2606124701143711076\\\"",\\\""apptime\\\"":1781278442056,\\\""appuser\\\"":\\\""260517001003859\\\"",\\\""item\\\"":\\\""\\\"",\\\""amount\\\"":20000,\\\""embeddata\\\"":\\\""{\\\\\\\""promotioninfo\\\\\\\"":\\\\\\\""{\\\\\\\\\\\\\\\""campaigncode\\\\\\\\\\\\\\\"":\\\\\\\\\\\\\\\""\\\\\\\\\\\\\\\"",\\\\\\\\\\\\\\\""skuid\\\\\\\\\\\\\\\"":0,\\\\\\\\\\\\\\\""discounttype\\\\\\\\\\\\\\\"":0,\\\\\\\\\\\\\\\""eventid\\\\\\\\\\\\\\\"":1,\\\\\\\\\\\\\\\""cashbackvalue\\\\\\\\\\\\\\\"":1400,\\\\\\\\\\\\\\\""promotioncode\\\\\\\\\\\\\\\"":\\\\\\\\\\\\\\\""\\\\\\\\\\\\\\\"",\\\\\\\\\\\\\\\""productinfo\\\\\\\\\\\\\\\"":[{\\\\\\\\\\\\\\\""amount\\\\\\\\\\\\\\\"":20000,\\\\\\\\\\\\\\\""price\\\\\\\\\\\\\\\"":20000,\\\\\\\\\\\\\\\""count\\\\\\\\\\\\\\\"":1,\\\\\\\\\\\\\\\""sku\\\\\\\\\\\\\\\"":\\\\\\\\\\\\\\\""441_VIETTEL_vtvgo-plus-30d\\\\\\\\\\\\\\\"",\\\\\\\\\\\\\\\""manufactory\\\\\\\\\\\\\\\"":\\\\\\\\\\\\\\\""VTVCAB_VIETTEL_SANN\\\\\\\\\\\\\\\"",\\\\\\\\\\\\\\\""category\\\\\\\\\\\\\\\"":\\\\\\\\\\\\\\\""VIETTEL\\\\\\\\\\\\\\\""}]}\\\\\\\"",\\\\\\\""columninfo\\\\\\\"":\\\\\\\""\\\\\\\"",\\\\\\\""email\\\\\\\"":\\\\\\\""\\\\\\\"",\\\\\\\""zlppaymentid\\\\\\\"":\\\\\\\""P504466\\\\\\\"",\\\\\\\""cashbackvalue\\\\\\\"":1400,\\\\\\\""autodebitinfo\\\\\\\"":\\\\\\\""{\\\\\\\\\\\\\\\""enable\\\\\\\\\\\\\\\"":false}\\\\\\\""}\\\"",\\\""servertime\\\"":1781278466722,\\\""channel\\\"":38,\\\""merchantuserid\\\"":\\\""pFxYjnuHqqbf7-GGWj-3mg-KLckU_vEslv16O2IsmUE\\\"",\\\""userfeeamount\\\"":0,\\\""discountamount\\\"":0,\\\""zptoken\\\"":\\\""\\\"",\\\""ccbankcode\\\"":\\\""\\\"",\\\""zpSystem\\\"":1}\"",\""mac\"":\""c5317a5232b039cefa412bca3c2767388b4ee72552b950ee2b1750e1e5e0253c\""}""}
+
+2. **everest**
+   {""level"":""info"",""time"":""2026-06-12T22:34:26.729665655+07:00"",""caller"":""rabbitmq/producer.go:130"",""msg"":""rabbitmq: push message successfully"",""trace_id"":""565677b718e047a47295fed0eeac84a9"",""rabbitmq_message"":""{\""id\"":\""565677b718e047a47295fed0eeac84a9\"",\""exchange\"":\""prod_everest_deliver_direct\"",\""routing_key\"":\""441_VTVCAB_VIETTEL_SANN\"",\""body\"":\""{\\\""app_id\\\"":4527,\\\""order_id\\\"":2606124701143711076}\"",\""headers\"":{\""b3\"":\""565677b718e047a47295fed0eeac84a9-abaf57fbc7587f01-1\"",\""x-b3-sampled\"":\""1\"",\""x-b3-spanid\"":\""abaf57fbc7587f01\"",\""x-b3-traceid\"":\""565677b718e047a47295fed0eeac84a9\""}}""}
+
+3. **everest**
+   {""level"":""info"",""time"":""2026-06-12T22:34:26.730204647+07:00"",""caller"":""monitor/gin.go:63"",""msg"":""http.server: sending response"",""trace_id"":""565677b718e047a47295fed0eeac84a9"",""http.server.latency"":""3.568789ms"",""http.server.response.body"":""{\""returncode\"":1,\""returnmessage\"":\""Success\""}"",""http.server.status"":200}
+
+4. **everest**
+   {""level"":""info"",""time"":""2026-06-12T22:34:26.731230498+07:00"",""caller"":""rabbitmq/consumer.go:513"",""msg"":""consume message successfully"",""trace_id"":""00000000000000000000000000000000"",""rabbitmq_message"":""{\""id\"":\""565677b718e047a47295fed0eeac84a9\"",\""exchange\"":\""prod_everest_deliver_direct\"",\""routing_key\"":\""441_VTVCAB_VIETTEL_SANN\"",\""body\"":\""{\\\""app_id\\\"":4527,\\\""order_id\\\"":2606124701143711076}\"",\""headers\"":{\""b3\"":\""565677b718e047a47295fed0eeac84a9-abaf57fbc7587f01-1\"",\""x-b3-sampled\"":\""1\"",\""x-b3-spanid\"":\""abaf57fbc7587f01\"",\""x-b3-traceid\"":\""565677b718e047a47295fed0eeac84a9\""}}""}
+
+5. **everest**
+   {""level"":""info"",""time"":""2026-06-12T22:34:26.733556158+07:00"",""caller"":""monitor/http.go:57"",""msg"":""http.client: sending request"",""trace_id"":""00000000000000000000000000000000"",""http.client.request.host"":""provider-sann.aqr-telco-production.svc"",""http.client.request.path"":""/v2/deliver"",""http.client.request.method"":""POST"",""http.client.request.headers"":{""B3"":[""565677b718e047a47295fed0eeac84a9-8d3e8a4e697e1ccb-1""],""Content-Type"":[""application/json""],""X-B3-Sampled"":[""1""],""X-B3-Spanid"":[""8d3e8a4e697e1ccb""],""X-B3-Traceid"":[""565677b718e047a47295fed0eeac84a9""],""X-Idempotency-Key"":[""2606124701143711076""]},""http.client.request.body"":""{\""client_id\"":\""2\"",\""request_date\"":1781278466,\""signature\"":\""6d4693c2f7b3426e6ccb29ae0429436d29dbff56dc5a2672b75d52a03257bf23\"",\""data\"":\""{\\\""product_line_id\\\"":441,\\\""app_id\\\"":4527,\\\""supplier_id\\\"":6,\\\""supplier_code\\\"":\\\""VIETTEL\\\"",\\\""order_id\\\"":2606124701143711076,\\\""order_time\\\"":1781278442056,\\\""extra_info\\\"":\\\""{\\\\\\\""package_expire_time\\\\\\\"":1783789200000,\\\\\\\""package_type\\\\\\\"":\\\\\\\""\\\\\\\"",\\\\\\\""time_before_notify\\\\\\\"":0}\\\"",\\\""product_info\\\"":{\\\""amount\\\"":20000,\\\""quantity\\\"":1,\\\""package_code\\\"":\\\""vtvgo-plus-30d\\\"",\\\""phone_number\\\"":\\\""***MASKED***"",\\\""phone_name\\\"":\\\""Số điện thoại\\\""}}\""}""}
+
+6. **provider-sann**
+   {""level"":""info"",""time"":""2026-06-12T22:34:26.736736701+07:00"",""caller"":""monitor/gin_middleware.go:40"",""msg"":""server: received request"",""trace_id"":""565677b718e047a47295fed0eeac84a9"",""http.server.client_ip"":""10.52.11.116"",""http.server.path"":""/v2/deliver"",""http.server.method"":""POST""}
+
+7. **provider-sann**
+   {""level"":""info"",""time"":""2026-06-12T22:34:26.737542341+07:00"",""caller"":""handler/handler.go:155"",""msg"":""handler: received request"",""trace_id"":""565677b718e047a47295fed0eeac84a9"",""handler.request.data"":{""order_id"":2606124701143711076,""product_info"":{""phone_number"":""***MASKED***"",""package_code"":""vtvgo-plus-30d""}}}
+
+8. **provider-sann**
+   {""level"":""info"",""time"":""2026-06-12T22:34:26.739555944+07:00"",""caller"":""monitor/round_tripper.go:28"",""msg"":""http.client: sending request"",""trace_id"":""565677b718e047a47295fed0eeac84a9"",""http.client.host"":""api.datadidong.com"",""http.client.path"":""/ds_postpaid/reg_service"",""http.client.raw_query"":""password=A*tk8T@D&msisdn=0383429697&tranId=2606124701143711076&reqTime=1781278466737&cpCode=sann_zion&dataPack=vtvgo-plus-30d&data=o06Fj-jZ4QwaAu-4YbVSiU6igKYB2VDiow8zyGd2cFyIY3rOpMK7owjELlcyXXOR2Z66F2o0GDZ1j9EtAPLc9w-7sUdF--bvXrLL7R5YQGknEA4KuBPE-ZN9_wykHUhrCeYo-JgsPRDIufNZYDRvrHKK7d8Ox_pXUqb9jqLXFczxseYqroc2ER21xSeiascXGpo3_xu1Eny0hJLOytGXcLaaN2AVq1ijT6afAT_Z7boR0iVq0Hz3wsiIY3Lnz6mdtgAVacmCbVddmvxbO39I7LlpBtZxh2tLEeg_EbfzKg3YZkD2sZrvc9ApcMgUGxulCkQAHiXqEU5Fvj-tLPzwxw==&signature=LM2AT78QWG2vfj049CkK2iRpz0OVmDzcy5vml80DOqY7Nv4ug_QVJkqe9Z3qxquHb-sind7htH7BhVsWO8-KP9OiDXphw-3zGpavcF28QTM3qzw-Kz_qzSjqMwCNcKcPHDIdUzPpTeOEKDO1BuI4k56pWjIvNSgfgYsreq-IVTKFK2rCSHmFVuxw4ovXEXsG9SsNCgM5pDKrb--cAKHPLHLWK5ioWnL7K2FsJM_6-dfMroeJcvSraRsXEf3M2opXHGsR3XEiFCWmjqAWDBlb-QB8tsZcHq0jIKpyDDl5GFP1gSNopg0XB_bgtTKywn494gWQ6863CM99VpDCFS8PyA==""}
+
+9. **provider-sann**
+   {""level"":""info"",""time"":""2026-06-12T22:34:34.133628631+07:00"",""caller"":""monitor/round_tripper.go:32"",""msg"":""http.client: received response"",""trace_id"":""565677b718e047a47295fed0eeac84a9"",""http.client.latency"":""7.394072561s""}
+
+10. **provider-sann**
+   {""level"":""info"",""time"":""2026-06-12T22:34:34.133790282+07:00"",""caller"":""monitor/gin_middleware.go:63"",""msg"":""http.server: sending response"",""trace_id"":""565677b718e047a47295fed0eeac84a9"",""http.server.response"":""{\""return_code\"":1,\""return_message\"":\""success\"",\""data\"":\""{\\\""provider_return_message\\\"":\\\""SUCCESS\\\"",\\\""provider_return_code\\\"":\\\""SUCCESS_0\\\"",\\\""provider_response\\\"":\\\""{\\\\\\\""success\\\\\\\"":true,\\\\\\\""data\\\\\\\"":{\\\\\\\""tranId\\\\\\\"":\\\\\\\""2606124701143711076\\\\\\\"",\\\\\\\""return\\\\\\\"":\\\\\\\""SUCCESS\\\\\\\"",\\\\\\\""detailCode\\\\\\\"":\\\\\\\""0\\\\\\\"",\\\\\\\""description\\\\\\\"":\\\\\\\""SUCCESS\\\\\\\"",\\\\\\\""subCpCode\\\\\\\"":\\\\\\\""\\\\\\\""}}\\\"",\\\""provider_trans_id\\\"":\\\""2606124701143711076\\\"",\\\""error_code\\\"":1,\\\""error_message\\\"":\\\""Giao dịch thành công\\\"",\\\""error_sub_message\\\"":\\\""Giao dịch thành công\\\""}\""}"",""http.server.status"":200,""http.server.latency"":""7.397080289s""}
+
+11. **provider-sann**
+   {""level"":""info"",""time"":""2026-06-12T22:34:34.133689921+07:00"",""caller"":""sann/client.go:340"",""msg"":""sann: read response body"",""trace_id"":""565677b718e047a47295fed0eeac84a9"",""sann.client.response.body"":""{\""success\"":true,\""data\"":{\""tranId\"":\""2606124701143711076\"",\""return\"":\""SUCCESS\"",\""detailCode\"":\""0\"",\""description\"":\""SUCCESS\""}}""}
+
+12. **everest**
+   {""level"":""info"",""time"":""2026-06-12T22:34:34.135751426+07:00"",""caller"":""rabbitmq/producer.go:130"",""msg"":""rabbitmq: push message successfully"",""trace_id"":""00000000000000000000000000000000"",""rabbitmq_message"":""{\""id\"":\""565677b718e047a47295fed0eeac84a9\"",\""exchange\"":\""prod_everest_final_order_backoffice_direct\"",\""routing_key\"":\""default\"",\""body\"":\""{\\\""id\\\"":2606124701143711076,\\\""app_id\\\"":4527,\\\""supplier_id\\\"":6,\\\""supplier_name\\\"":\\\""Viettel\\\"",\\\""app_user\\\"":\\\""260517001003859\\\"",\\\""zalo_pay_id\\\"":\\\""260517001003859\\\"",\\\""telco_code\\\"":\\\""VIETTEL\\\"",\\\""package_id\\\"":2657,\\\""package_code\\\"":\\\""vtvgo-plus-30d\\\"",\\\""package_name\\\"":\\\""VTVgo Plus 30 day\\\"",\\\""amount\\\"":20000,\\\""quantity\\\"":1,\\\""phone_number\\\"":\\\""***MASKED***"",\\\""user_phone_number\\\"":\\\""***MASKED***"",\\\""email\\\"":\\\""\\\"",\\\""phone_name\\\"":\\\""Số điện thoại\\\"",\\\""description\\\"":\\\""Nạp Data Viettel 0383429697\\\"",\\\""display_object\\\"":{\\\""Mệnh giá\\\"":\\\""VTVgo Plus 30 day - 20.000đ\\\"",\\\""Nhà mạng\\\"":\\\""Viettel\\\"",\\\""Nạp cho\\\"":\\\""Số điện thoại - 0383429697\\\""},\\\""embed_data\\\"":\\\""{\\\\\\\""promotioninfo\\\\\\\"":\\\\\\\""{\\\\\\\\\\\\\\\""campaigncode\\\\\\\\\\\\\\\"":\\\\\\\\\\\\\\\""\\\\\\\\\\\\\\\"",\\\\\\\\\\\\\\\""skuid\\\\\\\\\\\\\\\"":0,\\\\\\\\\\\\\\\""discounttype\\\\\\\\\\\\\\\"":0,\\\\\\\\\\\\\\\""eventid\\\\\\\\\\\\\\\"":1,\\\\\\\\\\\\\\\""cashbackvalue\\\\\\\\\\\\\\\"":1400,\\\\\\\\\\\\\\\""promotioncode\\\\\\\\\\\\\\\"":\\\\\\\\\\\\\\\""\\\\\\\\\\\\\\\"",\\\\\\\\\\\\\\\""productinfo\\\\\\\\\\\\\\\"":[{\\\\\\\\\\\\\\\""amount\\\\\\\\\\\\\\\"":20000,\\\\\\\\\\\\\\\""price\\\\\\\\\\\\\\\"":20000,\\\\\\\\\\\\\\\""count\\\\\\\\\\\\\\\"":1,\\\\\\\\\\\\\\\""sku\\\\\\\\\\\\\\\"":\\\\\\\\\\\\\\\""441_VIETTEL_vtvgo-plus-30d\\\\\\\\\\\\\\\"",\\\\\\\\\\\\\\\""manufactory\\\\\\\\\\\\\\\"":\\\\\\\\\\\\\\\""VTVCAB_VIETTEL_SANN\\\\\\\\\\\\\\\"",\\\\\\\\\\\\\\\""category\\\\\\\\\\\\\\\"":\\\\\\\\\\\\\\\""VIETTEL\\\\\\\\\\\\\\\""}]}\\\\\\\"",\\\\\\\""columninfo\\\\\\\"":\\\\\\\""\\\\\\\"",\\\\\\\""email\\\\\\\"":\\\\\\\""\\\\\\\"",\\\\\\\""zlppaymentid\\\\\\\"":\\\\\\\""P504466\\\\\\\"",\\\\\\\""cashbackvalue\\\\\\\"":1400,\\\\\\\""autodebitinfo\\\\\\\"":\\\\\\\""{\\\\\\\\\\\\\\\""enable\\\\\\\\\\\\\\\"":false}\\\\\\\""}\\\"",\\\""status\\\"":1,\\\""user_fee_amount\\\"":0,\\\""discount_amount\\\"":0,\\\""bank_code\\\"":\\\""\\\"",\\\""pmc_id\\\"":38,\\\""tpe_return_code\\\"":1,\\\""get_payment_status_counter\\\"":1,\\\""zp_trans_id\\\"":260612004333942,\\\""product_line_id\\\"":441,\\\""product_line_type\\\"":\\\""DATA\\\"",\\\""product_code\\\"":\\\""AC002\\\"",\\\""error_message\\\"":\\\""Giao dịch thành công\\\"",\\\""error_sub_message\\\"":\\\""Giao dịch thành công\\\"",\\\""provider_return_message\\\"":\\\""SUCCESS\\\"",\\\""provider_code\\\"":\\\""VTVCAB_VIETTEL_SANN\\\"",\\\""provider_return_code\\\"":\\\""SUCCESS_0\\\"",\\\""provider_trans_id\\\"":\\\""2606124701143711076\\\"",\\\""get_deliver_status_counter\\\"":0,\\\""extra_info\\\"":\\\""{\\\\\\\""package_expire_time\\\\\\\"":1783789200000,\\\\\\\""package_type\\\\\\\"":\\\\\\\""\\\\\\\"",\\\\\\\""time_before_notify\\\\\\\"":0}\\\"",\\\""invoice_info\\\"":\\\""\\\"",\\\""detail\\\"":null,\\\""product_info\\\"":\\\""\\\"",\\\""zp_trans_token\\\"":\\\""AC44SBBneC-Vho5pE7g1PsMA\\\"",\\\""order_time\\\"":1781278442056,\\\""updated_time\\\"":1781278474134}\"",\""headers\"":{\""b3\"":\""565677b718e047a47295fed0eeac84a9-fb0786ca4074dfda-1\"",\""x-b3-sampled\"":\""1\"",\""x-b3-spanid\"":\""fb0786ca4074dfda\"",\""x-b3-traceid\"":\""565677b718e047a47295fed0eeac84a9\""}}""}
+
+13. **everest**
+   {""level"":""info"",""time"":""2026-06-12T22:34:34.136833329+07:00"",""caller"":""rabbitmq/consumer.go:513"",""msg"":""consume message successfully"",""trace_id"":""00000000000000000000000000000000"",""rabbitmq_message"":""{\""id\"":\""565677b718e047a47295fed0eeac84a9\"",\""exchange\"":\""prod_everest_final_order_backoffice_direct\"",\""routing_key\"":\""default\"",\""body\"":\""{\\\""id\\\"":2606124701143711076,\\\""app_id\\\"":4527,\\\""supplier_id\\\"":6,\\\""supplier_name\\\"":\\\""Viettel\\\"",\\\""app_user\\\"":\\\""260517001003859\\\"",\\\""zalo_pay_id\\\"":\\\""260517001003859\\\"",\\\""telco_code\\\"":\\\""VIETTEL\\\"",\\\""package_id\\\"":2657,\\\""package_code\\\"":\\\""vtvgo-plus-30d\\\"",\\\""package_name\\\"":\\\""VTVgo Plus 30 day\\\"",\\\""amount\\\"":20000,\\\""quantity\\\"":1,\\\""phone_number\\\"":\\\""***MASKED***"",\\\""user_phone_number\\\"":\\\""***MASKED***"",\\\""email\\\"":\\\""\\\"",\\\""phone_name\\\"":\\\""Số điện thoại\\\"",\\\""description\\\"":\\\""Nạp Data Viettel 0383429697\\\"",\\\""display_object\\\"":{\\\""Mệnh giá\\\"":\\\""VTVgo Plus 30 day - 20.000đ\\\"",\\\""Nhà mạng\\\"":\\\""Viettel\\\"",\\\""Nạp cho\\\"":\\\""Số điện thoại - 0383429697\\\""},\\\""embed_data\\\"":\\\""{\\\\\\\""promotioninfo\\\\\\\"":\\\\\\\""{\\\\\\\\\\\\\\\""campaigncode\\\\\\\\\\\\\\\"":\\\\\\\\\\\\\\\""\\\\\\\\\\\\\\\"",\\\\\\\\\\\\\\\""skuid\\\\\\\\\\\\\\\"":0,\\\\\\\\\\\\\\\""discounttype\\\\\\\\\\\\\\\"":0,\\\\\\\\\\\\\\\""eventid\\\\\\\\\\\\\\\"":1,\\\\\\\\\\\\\\\""cashbackvalue\\\\\\\\\\\\\\\"":1400,\\\\\\\\\\\\\\\""promotioncode\\\\\\\\\\\\\\\"":\\\\\\\\\\\\\\\""\\\\\\\\\\\\\\\"",\\\\\\\\\\\\\\\""productinfo\\\\\\\\\\\\\\\"":[{\\\\\\\\\\\\\\\""amount\\\\\\\\\\\\\\\"":20000,\\\\\\\\\\\\\\\""price\\\\\\\\\\\\\\\"":20000,\\\\\\\\\\\\\\\""count\\\\\\\\\\\\\\\"":1,\\\\\\\\\\\\\\\""sku\\\\\\\\\\\\\\\"":\\\\\\\\\\\\\\\""441_VIETTEL_vtvgo-plus-30d\\\\\\\\\\\\\\\"",\\\\\\\\\\\\\\\""manufactory\\\\\\\\\\\\\\\"":\\\\\\\\\\\\\\\""VTVCAB_VIETTEL_SANN\\\\\\\\\\\\\\\"",\\\\\\\\\\\\\\\""category\\\\\\\\\\\\\\\"":\\\\\\\\\\\\\\\""VIETTEL\\\\\\\\\\\\\\\""}]}\\\\\\\"",\\\\\\\""columninfo\\\\\\\"":\\\\\\\""\\\\\\\"",\\\\\\\""email\\\\\\\"":\\\\\\\""\\\\\\\"",\\\\\\\""zlppaymentid\\\\\\\"":\\\\\\\""P504466\\\\\\\"",\\\\\\\""cashbackvalue\\\\\\\"":1400,\\\\\\\""autodebitinfo\\\\\\\"":\\\\\\\""{\\\\\\\\\\\\\\\""enable\\\\\\\\\\\\\\\"":false}\\\\\\\""}\\\"",\\\""status\\\"":1,\\\""user_fee_amount\\\"":0,\\\""discount_amount\\\"":0,\\\""bank_code\\\"":\\\""\\\"",\\\""pmc_id\\\"":38,\\\""tpe_return_code\\\"":1,\\\""get_payment_status_counter\\\"":1,\\\""zp_trans_id\\\"":260612004333942,\\\""product_line_id\\\"":441,\\\""product_line_type\\\"":\\\""DATA\\\"",\\\""product_code\\\"":\\\""AC002\\\"",\\\""error_message\\\"":\\\""Giao dịch thành công\\\"",\\\""error_sub_message\\\"":\\\""Giao dịch thành công\\\"",\\\""provider_return_message\\\"":\\\""SUCCESS\\\"",\\\""provider_code\\\"":\\\""VTVCAB_VIETTEL_SANN\\\"",\\\""provider_return_code\\\"":\\\""SUCCESS_0\\\"",\\\""provider_trans_id\\\"":\\\""2606124701143711076\\\"",\\\""get_deliver_status_counter\\\"":0,\\\""extra_info\\\"":\\\""{\\\\\\\""package_expire_time\\\\\\\"":1783789200000,\\\\\\\""package_type\\\\\\\"":\\\\\\\""\\\\\\\"",\\\\\\\""time_before_notify\\\\\\\"":0}\\\"",\\\""invoice_info\\\"":\\\""\\\"",\\\""detail\\\"":null,\\\""product_info\\\"":\\\""\\\"",\\\""zp_trans_token\\\"":\\\""AC44SBBneC-Vho5pE7g1PsMA\\\"",\\\""order_time\\\"":1781278442056,\\\""updated_time\\\"":1781278474134}\"",\""headers\"":{\""b3\"":\""565677b718e047a47295fed0eeac84a9-fb0786ca4074dfda-1\"",\""x-b3-sampled\"":\""1\"",\""x-b3-spanid\"":\""fb0786ca4074dfda\"",\""x-b3-traceid\"":\""565677b718e047a47295fed0eeac84a9\""}}""}","15/Jun/26 12:23 PM;kietpt2;Dear cs, team đã update lại thông tin gói đồng bộ rồi nhé.
+Thanks",,,,,,
+[Dịch vụ tài chính] - [Cash Loan - Vay tiền nhanh] DVTC-Đăng ký dịch vụ - Ticket 6923496,ISSUE-41005,1022200,Production Issue,Resolved,ISSUE,ZaloPay Production Issue,software,chaudh,ZaloPay Production Issue,,P3 (Medium),Done,cszalopay,cszalopay,cszalopay,13/06/2026 18:26,15/06/2026 10:19,15/06/2026 19:56,15/06/2026 10:18,,0,ai_resolve,,,"+ UserID: 251222000004941
+
+Vấn đề: Khách hàng đăng ký vay tiền TNEX báo lỗi 'Có gì đó không đúng, vui lòng bấm 'Gửi lại mã để xác thực mà mới', Khách hàng bấm kg gửi mã mới vẫn báo lỗi như trên.
+
+
+>>> Nhờ DEV hỗ trợ kiểm tra thêm nguyên nhân và HXL
+CashLoan	|Họ và tênNguyễn Quốc Bảo	|
+Số điện thoại0975612704	|
+CMND/CCCD042204012965	|
+ID Tài khoản20260612-c761e2ca-5c48-45ee-a442-b609c2b43857	|
+
+
+
+	|TNEX	|Ngày đăng ký16:44:00 12/06/2026	|
+Ngày được duyệt	|
+
+
+
+	|PROCESSING	|VERIFY_TELCO_OTP	|	|
+
+
+",,247_adm,cszalopay,incidentadministrator,,,,,,,,,,,,13/Jun/26 6:26 PM;cszalopay;0.jpeg;https://jira.zalopay.vn/secure/attachment/776216/0.jpeg,,,,,,,,,Internal Support (CS/FA/OP/PO/BO/Others Squad),,,,no,,,10,44,0,0,,Lending_cashloan,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,22,14,,,,,,,,,,,,0|i4obnc:,,15/06/2026 10:18,,,"Were there any external factors affecting the issue, such as third-party service failures, or changes in external APIs?",External Factors,,4,18/06/2026 18:00,PCF-FS Lending 26.06.A,,,,,,,,,,,,,Lending Solutions,,,,,,,,,,,,"13/Jun/26 6:26 PM;incidentadministrator;Lưu ý khi xử lý ticket
+
+*Ticket PIC* (người kiểm tra thông tin đầu vào, điều phối ticket):
+
+1. Cập nhật Customer Request Type nếu sai hoặc chuyển lại Reporter nếu không có thông tin.
+2. Chọn Acknowledge nếu ticket đã đúng Customer Request Type.
+3. Chọn Need more information nếu cần thêm thông tin từ Reporter.
+4. Gán ticket cho PIC (Người xử lý yêu cầu), chuyển ticket sang trạng thái Assigned.
+
+*PIC* (Người xử lý yêu cầu)
+
+1. Chọn Start Progress để bắt đầu xử lý ticket theo thời gian SLA đã cam kết (thời gian được tính từ lúc khởi tạo yêu cầu tới lúc chọn Resolve).
+2. Chọn Resolve khi ticket thỏa 1 trong các tình huống sau
+    - Đã được xử lý xong.
+    - Đã có thời gian cam kết xử lý từ đối tác/business & đã comment cho người tạo yêu cầu.
+    - Đã tạo bug/backlog để xử lý yêu cầu của khách hàng & đã comment cho người tạo yêu cầu.
+
+*Reporter* (Người tạo yêu cầu): Sau khi ticket chuyển qua trạng thái Resolved, Reporter làm việc với khách hàng. Nếu khách hàng đồng ý thì chuyển ticket qua Close, ngược lại ReOpen.
+
+Tham khảo chi tiết quy trình tại: https://confluence.zalopay.vn/x/Pi6TDg
+
+Mọi thắc mắc, vui lòng liên hệ PMO để được hỗ trợ.","15/Jun/26 10:17 AM;247_adm;(This message is generated by Lending Tool. Please contact [~minhdc3] if there are any issues with the information)
+h3. *Nguyên nhân*: Tại bước xác thực OTP, hệ thống ZaloPay gọi API sang TNEX nhưng phía TNEX trả về lỗi không tìm thấy hồ sơ vay này (`rpc error: code = InvalidArgument desc = Loan application not found`). Do lỗi đồng bộ nên hồ sơ không thể tiếp tục.
+
+h3. *Trạng thái hiện tại*: Khoản vay kẹt ở bước `VERIFY_TELCO_OTP` (`Status 4`). 
+
+h3. *CTA*: 
+- Đề nghị team Tech/DEV hỗ trợ hủy hồ sơ bị lỗi này.
+- CS phản hồi thông báo cho KH biết hồ sơ đang gặp lỗi kết nối và hướng dẫn KH tạo lại hồ sơ vay mới.
+
+{quote}
+[DEBUG] investigation report
+
+h3. Thông tin ticket
+* *ZaloPay ID*: 251222000004941
+* *Loan Application ID*: 20260612-c761e2ca-5c48-45ee-a442-b609c2b43857
+* *Partner*: TNEX
+
+h3. Phân loại ticket
+* *Label*: symptom/partner_error
+* *Recommended Action*: Hướng dẫn khách hàng tạo lại hồ sơ mới.
+
+h3. Kết quả tra cứu
+* Loan status: 4 (PROCESSING) / Current step: VERIFY_TELCO_OTP
+* Lỗi ghi nhận: Fail to confirm registration with Tnex (rpc error: code = InvalidArgument desc = Loan application not found)
+{quote}",,,,,,,
+[Tài khoản] - [Tài khoản] TK-Đóng/tất toán tài khoản - Ticket 6911861,ISSUE-41004,1022199,Support,Resolved,ISSUE,ZaloPay Production Issue,software,chaudh,ZaloPay Production Issue,,P3 (Medium),Done,cszalopay,cszalopay,cszalopay,13/06/2026 17:36,15/06/2026 10:39,15/06/2026 23:43,15/06/2026 10:34,,0,,,,"Dear Team,
+
+
+Nhờ team hủy giao dịch giúp khách hàng dịch vụ auto debit apple để CS hỗ trợ đóng tài khoản manual cho khách hàng 
+UID:  250826005011770
+SĐT Zalopay:  0355452655
+Nhu cầu: Đóng tài khoản.
+Lý do: bỏ sim, muốn đóng để dùng lại 
+Binding ID : 251004kaBZZQQlBqRlqUdG3x30LEVyOV 
+Mã khách hàng: 057UVNAV6YQWY5V3TU7IGYHEQDB6XKQ 
+
+
+Cám ơn team.
+
+
+",,cszalopay,incidentadministrator,,,,,,,,,,,,,,,,,,,,,,Internal Support (CS/FA/OP/PO/BO/Others Squad),10,,,no,,,10,44,0,0,,Payment_OnlineMerchant,,,rule of apple,,,,,,,,,,,,,,,,,,,,,,,,,,,22,14,,,,,,,,,,,,0|i4obn4:,,15/06/2026 10:34,,,,Others,,3,17/06/2026 17:36,,,,,,,,,,,,,,Payment Solutions,Product,ZPO,,,,,,,,,,"13/Jun/26 5:36 PM;incidentadministrator;Lưu ý khi xử lý ticket
+
+*Ticket PIC* (người kiểm tra thông tin đầu vào, điều phối ticket):
+
+1. Cập nhật Customer Request Type nếu sai hoặc chuyển lại Reporter nếu không có thông tin.
+2. Chọn Acknowledge nếu ticket đã đúng Customer Request Type.
+3. Chọn Need more information nếu cần thêm thông tin từ Reporter.
+4. Gán ticket cho PIC (Người xử lý yêu cầu), chuyển ticket sang trạng thái Assigned.
+
+*PIC* (Người xử lý yêu cầu)
+
+1. Chọn Start Progress để bắt đầu xử lý ticket theo thời gian SLA đã cam kết (thời gian được tính từ lúc khởi tạo yêu cầu tới lúc chọn Resolve).
+2. Chọn Resolve khi ticket thỏa 1 trong các tình huống sau
+    - Đã được xử lý xong.
+    - Đã có thời gian cam kết xử lý từ đối tác/business & đã comment cho người tạo yêu cầu.
+    - Đã tạo bug/backlog để xử lý yêu cầu của khách hàng & đã comment cho người tạo yêu cầu.
+
+*Reporter* (Người tạo yêu cầu): Sau khi ticket chuyển qua trạng thái Resolved, Reporter làm việc với khách hàng. Nếu khách hàng đồng ý thì chuyển ticket qua Close, ngược lại ReOpen.
+
+Tham khảo chi tiết quy trình tại: https://confluence.zalopay.vn/x/Pi6TDg
+
+Mọi thắc mắc, vui lòng liên hệ PMO để được hỗ trợ.",,,,,,,,
