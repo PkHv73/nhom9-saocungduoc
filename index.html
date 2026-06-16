@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZaloPay AI Agent — Nhóm 9 | GreenNode Claw-a-thon 2026</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #1a2744 0%, #0d1b2a 100%);
+      border-bottom: 1px solid #2d3748;
+      padding: 32px 24px 40px;
+      text-align: center;
+    }
+    .badge {
+      display: inline-block;
+      background: #1a3a5c;
+      border: 1px solid #2d6a9f;
+      color: #63b3ed;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+    .header h1 {
+      font-size: clamp(24px, 4vw, 40px);
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .header h1 span { color: #63b3ed; }
+    .header .sub {
+      color: #94a3b8;
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+    .header .team {
+      color: #64748b;
+      font-size: 13px;
+    }
+    .header .team strong { color: #94a3b8; }
+
+    /* Main */
+    .main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 48px 20px 64px;
+    }
+
+    /* Section label */
+    .section-label {
+      text-align: center;
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+
+    /* Cards */
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 48px;
+    }
+    @media (max-width: 640px) { .cards { grid-template-columns: 1fr; } }
+
+    .card {
+      background: #1a1f2e;
+      border: 1px solid #2d3748;
+      border-radius: 16px;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .card:hover {
+      border-color: #4a90d9;
+      transform: translateY(-3px);
+    }
+    .card-header {
+      padding: 24px 24px 16px;
+    }
+    .card-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    .card-desc {
+      font-size: 13px;
+      color: #94a3b8;
+      line-height: 1.6;
+    }
+    .card-features {
+      padding: 0 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .feature-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+    .card-footer {
+      padding: 16px 24px;
+      border-top: 1px solid #2d3748;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity 0.15s;
+      width: 100%;
+      justify-content: center;
+    }
+    .btn:hover { opacity: 0.88; }
+    .btn-blue { background: #2563eb; color: #fff; }
+    .btn-teal { background: #0d9488; color: #fff; }
+
+    /* How it works */
+    .flow {
+      background: #1a1f2e;
+      border: 1px solid #2d3748;
+      border-radius: 16px;
+      padding: 32px 28px;
+      margin-bottom: 48px;
+    }
+    .flow h2 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .flow-steps {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: wrap;
+    }
+    .step {
+      text-align: center;
+      padding: 0 16px;
+      min-width: 120px;
+    }
+    .step-num {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #1e3a5f;
+      border: 2px solid #2563eb;
+      color: #63b3ed;
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 8px;
+    }
+    .step-label {
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.4;
+    }
+    .step-arrow {
+      color: #4a5568;
+      font-size: 18px;
+      padding: 0 4px;
+    }
+    @media (max-width: 560px) { .step-arrow { display: none; } .step { margin-bottom: 12px; } }
+
+    /* Tech stack */
+    .tech {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .tech h3 {
+      font-size: 13px;
+      color: #64748b;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+    .tag {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      font-size: 12px;
+      padding: 5px 12px;
+      border-radius: 6px;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      color: #475569;
+      font-size: 12px;
+      padding-top: 32px;
+      border-top: 1px solid #1e293b;
+    }
+    .footer a { color: #4a90d9; text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="badge">GreenNode Claw-a-thon 2026</div>
+  <h1>ZaloPay <span>AI Agent</span></h1>
+  <p class="sub">Hệ thống AI tự động phân loại &amp; xử lý ticket CSKH</p>
+  <p class="team"><strong>Nhóm 9 — Sao cũng được</strong> &nbsp;·&nbsp; VanPNH</p>
+</div>
+
+<div class="main">
+
+  <p class="section-label">Chọn demo bạn muốn thử</p>
+
+  <div class="cards">
+
+    <!-- Project 1 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🚀</div>
+        <div class="card-title">ZaloPay AI Support</div>
+        <div class="card-desc">Agent CSKH tự động phân loại ticket, phân tích nghiệp vụ và soạn phản hồi chuẩn trong 1 lần gọi LLM.</div>
+      </div>
+      <div class="card-features">
+        <div class="feature">
+          <div class="feature-dot" style="background:#63b3ed"></div>
+          <span>Nhập ticket thủ công hoặc xử lý hàng loạt từ Excel</span>
+        </div>
+        <div class="feature">
+          <div class="feature-dot" style="background:#63b3ed"></div>
+          <span>Phân loại: TELCO, BANKING, WALLET, TOPUP, PAYMENT</span>
+        </div>
+        <div class="feature">
+          <div class="feature-dot" style="background:#63b3ed"></div>
+          <span>Phân tích root cause, refund, escalate tự động</span>
+        </div>
+        <div class="feature">
+          <div class="feature-dot" style="background:#63b3ed"></div>
+          <span>Soạn phản hồi chuẩn văn phong ZaloPay</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <a href="/demo.html" class="btn btn-blue">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Dùng thử AI Support
+        </a>
+      </div>
+    </div>
+
+    <!-- Project 2 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📊</div>
+        <div class="card-title">ZaloPay Jira Analyzer</div>
+        <div class="card-desc">Agent phân tích hàng loạt Jira ticket, xuất dashboard và gợi ý xử lý cho team vận hành.</div>
+      </div>
+      <div class="card-features">
+        <div class="feature">
+          <div class="feature-dot" style="background:#4fd1c5"></div>
+          <span>Upload CSV/Excel từ Jira, phân tích song song</span>
+        </div>
+        <div class="feature">
+          <div class="feature-dot" style="background:#4fd1c5"></div>
+          <span>Phân tích root cause, SLA breach, escalate team</span>
+        </div>
+        <div class="feature">
+          <div class="feature-dot" style="background:#4fd1c5"></div>
+          <span>Dashboard tương tác với biểu đồ phân bổ</span>
+        </div>
+        <div class="feature">
+          <div class="feature-dot" style="background:#4fd1c5"></div>
+          <span>Xuất Excel và HTML report</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <a href="/jira_demo.html" class="btn btn-teal">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Dùng thử Jira Analyzer
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Flow -->
+  <div class="flow">
+    <h2>⚡ Luồng xử lý AI</h2>
+    <div class="flow-steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-label">Nhập ticket<br/>hoặc upload file</div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-label">GreenNode<br/>AgentBase</div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-label">LLM phân tích<br/>1 lần gọi</div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-label">Kết quả +<br/>phản hồi chuẩn</div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-label">Export Excel<br/>/ Dashboard</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tech -->
+  <div class="tech">
+    <h3>Công nghệ sử dụng</h3>
+    <div class="tags">
+      <span class="tag">GreenNode AgentBase</span>
+      <span class="tag">VNG MaaS LLM</span>
+      <span class="tag">MiniMax M2.5</span>
+      <span class="tag">Python FastAPI</span>
+      <span class="tag">Vercel</span>
+      <span class="tag">Vanilla JS</span>
+      <span class="tag">Chart.js</span>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>
+      📹 <a href="https://youtu.be/uo89MfomhA0" target="_blank">Video demo</a>
+      &nbsp;·&nbsp;
+      💻 <a href="https://github.com/PkHv73/nhom9-saocungduoc" target="_blank">GitHub</a>
+      &nbsp;·&nbsp;
+      GreenNode Claw-a-thon 2026
+    </p>
+  </div>
+
+</div>
+</body>
+</html>
