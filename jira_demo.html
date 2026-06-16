@@ -316,9 +316,12 @@
         batch.forEach((r, idx) => {
           const key = getKey(r);
           const t = resultMap[key] || serverTickets[idx] || {};
+          const meta = ticketMetaMap[key] || {};
           allTickets.push({
             key,
             type: getType(r),
+            summary: meta.problem || r['Summary'] || r['Description'] || '',
+            root_cause: t.root_cause || meta.root_cause || '',
             suggestion: t.suggestion || '—',
             sla_status: t.sla_status || 'OK',
             priority_action: !!t.priority_action,
@@ -546,10 +549,11 @@ new Chart(document.getElementById('c4'),{type:'bar',data:{labels:${JSON.stringif
 
   function exportExcel() {
     if (!lastResults.length) return;
-    const HEADERS = ['Issue Key','Loại vấn đề','Root Cause','SLA Status','Ưu tiên','Escalate đến','Gợi ý xử lý CS'];
+    const HEADERS = ['Issue Key','Loại vấn đề','Vấn đề khách hàng','Root Cause','SLA Status','Ưu tiên','Escalate đến','Gợi ý xử lý CS'];
     const rows = lastResults.map(t => [
       t.key || '',
       t.type || '',
+      t.summary || '',
       t.root_cause || '',
       t.sla_status || 'OK',
       t.priority_action ? 'Có' : 'Không',
@@ -557,7 +561,7 @@ new Chart(document.getElementById('c4'),{type:'bar',data:{labels:${JSON.stringif
       t.suggestion || t.error || ''
     ]);
     const ws = XLSX.utils.aoa_to_sheet([HEADERS, ...rows]);
-    ws['!cols'] = [16,26,28,12,10,28,65].map(w => ({ wch: w }));
+    ws['!cols'] = [16,26,42,28,12,10,28,65].map(w => ({ wch: w }));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Chi tiết Tickets');
     const date = new Date().toISOString().slice(0,10);
