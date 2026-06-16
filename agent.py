@@ -29,7 +29,7 @@ from openai import OpenAI
 # ─── CẤU HÌNH ─────────────────────────────────────────────────────────────────
 
 MODEL        = os.getenv("LLM_MODEL", os.getenv("MODEL", "minimax/minimax-m2.5"))
-MAX_TOKENS   = int(os.getenv("MAX_TOKENS", "1500"))
+MAX_TOKENS   = int(os.getenv("MAX_TOKENS", "800"))
 LOG_LEVEL    = os.getenv("LOG_LEVEL", "INFO").upper()
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://maas-llm-aiplatform-hcm.api.vngcloud.vn/v1")
 LLM_API_KEY  = os.getenv("LLM_API_KEY", "")
